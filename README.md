@@ -1,4 +1,14 @@
 puppet-cic-install
 ==================
 
-Puppet module to silently install Interactive Intelligence's CIC
+This module installs CIC silently.
+
+## Usage
+
+Example:
+```puppet
+class {'cic':
+}
+```
+
+See http://www.inin.com for more information about Interactive Intelligence products.
