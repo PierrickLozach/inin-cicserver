@@ -4,7 +4,7 @@ source  'https://github.com/PierrickI3/puppet-cic-install'
 author  'Pierrick Lozach'
 license 'Apache License 2.0'
 summary 'Module to install CIC silently'
-description 'Puppet module to install CIC silently. The Setup Assistant does not get executed.'
+description 'Puppet module to install CIC, Interaction Firmware and Media Server silently. The Setup Assistant does not get executed.'
 project_page  'https://github.com/PierrickI3/puppet-cic-install'
 
 dependency 'puppetlabs/dism', '>= 0.1.0'
