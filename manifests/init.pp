@@ -127,7 +127,7 @@ class puppet-cic-install {
       
       $mediaserver_licensefile = "C:\Users\Vagrant\Desktop\MediaServerLicense.i3lic"
       registry::value { 'Media Server License':
-        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile",
+        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile',
         type    => string,
         data    => $mediaserver_licensefile,
         ensure  => present,
