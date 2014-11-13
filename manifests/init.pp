@@ -80,6 +80,9 @@ class puppet-cic-install {
         ],
       }
       
+      notice("Running Setup Assistant...")
+      #INSERT HERE
+      
       notice("Downloading Media Server")
       $mediaserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
       $mediaserver_install = url_parse($mediaserver_source, 'filename')
@@ -109,7 +112,29 @@ class puppet-cic-install {
       }
       
       notice("Setting web config login password")
+      registry::value { 'Media Server web config password':
+        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword",
+        type    => string,
+        data    => 'CA1E4FED70D14679362C37DF14F7C88A',
+        ensure  => present,
+        require => [
+          Exec['mediaserver-install-run'],
+        ],
+      }
       
+      notice("Install Media Server license")
+      #TODO GENERATE LICENSE FOR MEDIA SERVER
+      
+      $mediaserver_licensefile = "C:\Users\Vagrant\Desktop\MediaServerLicense.i3lic"
+      registry::value { 'Media Server License':
+        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile",
+        type    => string,
+        data    => $mediaserver_licensefile,
+        ensure  => present,
+        require => [
+          Exec['mediaserver-install-run'],
+        ],
+      }
       
     }
     uninstalled:
