@@ -81,7 +81,16 @@ class puppet-cic-install {
       }
       
       notice("Running Setup Assistant...")
-      #INSERT HERE
+      file {'C:\\setupassistant.ahk':
+        ensure  => file,
+        require => Exec['interactionfirmware-install-run'],
+        content => template('inin-cic-install/setupassistant.ahk.erb'),
+      }
+      
+      exec {"setupassistant-run":
+        command => "cmd.exe /c C:\\setupassistant.ahk",
+        path    => $::path,
+      }
       
       notice("Downloading Media Server")
       $mediaserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
@@ -93,7 +102,7 @@ class puppet-cic-install {
         provider => powershell,
         require  => [
           File["${core::cache_dir}"],
-          Exec['cicserver-install-run'],
+          Exec['setupassistant-run'],
           ],
       }
 
@@ -137,7 +146,7 @@ class puppet-cic-install {
       }
       
       notice("Starting Media Server")
-      service { 'ININ Media Server':
+      service { 'ININMediaServer':
         ensure  => running,
         enable  => true,
         require => [
@@ -221,7 +230,7 @@ class puppet-cic-install {
         CreateShortcut \"http://localhost:8084" "Media_Server\"
         ",
         require [
-          service['ININ Media Server'],
+          service['ININMediaServer'],
         ],
       }
       
