@@ -3,7 +3,7 @@
 # == Parameters
 #
 
-class puppet-cic-install {
+class inin-cic-install {
 
   if ($operatingsystem != 'Windows')
   {
