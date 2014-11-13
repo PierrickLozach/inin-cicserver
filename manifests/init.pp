@@ -2,10 +2,6 @@
 #
 # == Parameters
 #
-# == Authors
-#
-# Pierrick Lozach
-#
 
 class puppet-cic-install {
 
