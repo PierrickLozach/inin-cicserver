@@ -21,7 +21,7 @@ class puppet-cic-install {
     
       notice("Ensuring .Net 3.5 is enabled")
       dism { 'NetFx3':
-        ensure => present,
+        ensure => present,w
         all => true,
       }
       
@@ -113,7 +113,7 @@ class puppet-cic-install {
       
       notice("Setting web config login password")
       registry::value { 'Media Server web config password':
-        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword",
+        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword',
         type    => string,
         data    => 'CA1E4FED70D14679362C37DF14F7C88A',
         ensure  => present,
