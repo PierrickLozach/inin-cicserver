@@ -6,3 +6,7 @@ license 'Apache License 2.0'
 summary 'Module to install CIC silently'
 description 'Puppet module to install CIC silently. The Setup Assistant does not get executed.'
 project_page  'https://github.com/PierrickI3/puppet-cic-install'
+
+dependency 'puppetlabs/dism', '>= 0.1.0'
+dependency 'puppetlabs/stdlib', '>= 3.1.0'
+dependency 'puppetlabs/registry', '>= 1.0.3'
