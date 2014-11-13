@@ -136,6 +136,104 @@ class puppet-cic-install {
         ],
       }
       
+      notice("Starting Media Server")
+      service { 'ININ Media Server':
+        ensure  => running,
+        enable  => true,
+        require => [
+          registry['Media Server License'],
+        ],
+      }
+      
+      notice("Pairing CIC and Media server")
+      $server=$facts['hostname']
+      $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
+      $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=admin1&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
+      
+      file { "mediaserver-pairing":
+        ensure  => present,
+        path    => "${core::cache_dir}/mediaserverpairing.ps1",
+        content => "
+        
+        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+        $uri = New-Object System.Uri ($url)
+        $secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
+        $mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", $secpasswd)
+        
+        $mediaserverPath = "c:\i3\ic\resources\MediaServerConfig.xml"
+        $commandServerCount = 0
+        $finishedLongWait = $false;
+
+        for($provisionCount = 0; $provisionCount -lt 15; $provisionCount++)
+        {
+            try { 
+                $r = Invoke-WebRequest -Uri $uri.AbsoluteUri -Credential $mycreds  -Method Post -Body $newServerData
+                
+            } catch {
+                $x =  $_.Exception.Message
+                write-host $x -ForegroundColor yellow
+            }
+        
+            sleep 10
+            [xml]$mediaServerConfig = Get-Content $mediaserverPath
+            $commandServers = $mediaServerConfig.SelectSingleNode("//MediaServerConfig/CommandServers")
+            $commandServerCount = $commandServers.ChildNodes.Count -gt 0
+            if($commandServerCount -gt 0)
+            {
+                write-host "command server provisioned"
+                $provisionCount = 100;
+                break;
+        
+            }
+        
+            if($provisionCount -eq 14 -And !$finishedLongWait)
+            {
+                $finishedLongWait= $true
+                #still not provisioned, sleep and try some more
+                write-host "waiting 10 minutes before trying again"
+                sleep 600
+                $provisionCount = 0;
+            }
+        }
+        
+        if ($commandServerCount -eq 0){
+            write-host "Error provisioning media server" -ForegroundColor red 
+        }
+        
+        write-host "Approving certificate in CIC"
+        function ApproveCertificate($certPath){
+          Set-ItemProperty -path "Registry::$certPath" -name Status -value Allowed
+        }
+        
+        $certs = Get-ChildItem -Path "hklm:\Software\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root\CustomerSite\Production\Config Certificates\Config Subsystems Certificates"
+        ApproveCertificate $certs[0].name
+        ApproveCertificate $certs[1].name
+        write-host "Certificate approval done"
+        
+        function CreateShortcut($AppLocation, $description){
+            $WshShell = New-Object -ComObject WScript.Shell
+            $Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\$description.url")
+            $Shortcut.TargetPath = $AppLocation
+            #$Shortcut.Description = $description 
+            $Shortcut.Save()
+        }
+        
+        CreateShortcut "http://localhost:8084" "Media_Server"
+        ",
+        require [
+          service['ININ Media Server'],
+        ],
+      }
+      
+      exec {"mediaserver-pair-cic":
+        command  => "${core::cache_dir}/mediaserverpairing.ps1",
+        provider => powershell,
+        require  => [
+          File['mediaserver-pairing'],
+          Exec['cicserver-install-run'],
+          ],
+      }
+      
     }
     uninstalled:
     {
