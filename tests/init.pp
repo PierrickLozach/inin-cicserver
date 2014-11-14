@@ -1,1 +1,1 @@
-include puppet-cic-install
+include inin-cic-install
