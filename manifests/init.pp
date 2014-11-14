@@ -19,12 +19,20 @@ class inin-cic-install {
     installed:
     {
     
+      # ==================
+      # -= Requirements =-
+      # ==================
+
       notice("Ensuring .Net 3.5 is enabled")
       dism { 'NetFx3':
         ensure => present,w
         all => true,
       }
       
+      # ================
+      # -= CIC Server =-
+      # ================
+
       notice("Downloading CIC Server")
       $cicserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\ICServer_2015_R1.msi'
       $cicserver_install = url_parse($cicserver_source, 'filename')
@@ -52,6 +60,10 @@ class inin-cic-install {
         ],
       }
       
+      # ==========================
+      # -= Interaction Firmware =-
+      # ==========================
+
       notice("Downloading Interaction Firmware")
       $interactionfirmware_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\InteractionFirwmare_2015_R1.msi'
       $interactionfirmware_install = url_parse($interactionfirmware_source, 'filename')
@@ -80,10 +92,49 @@ class inin-cic-install {
         ],
       }
       
+      # =================
+      # -= CIC License =-
+      # =================
+
+      notice("Getting Host Id...")
+      file {'C:\\gethostid.ahk':
+        ensure    => file,
+        content   => template('inin-cic-install/gethostid.ahk.erb'),
+      }
+      
+      exec {"gethostid-run":
+        command => "cmd.exe /c C:\\gethostid.ahk",
+        path    => $::path,
+        require => File["C:\\gethostid.ahk"],
+      }
+
+      notice("Generating CIC License...")
+      file {'C:\\generateciclicense.ahk':
+        ensure  => file,
+        require => Exec['gethostid-run'],
+        content => template('inin-cic-install/generateciclicense.ahk.erb'),
+      }
+
+      exec {"gethostid-run":
+        command => "cmd.exe /c C:\\gethostid.ahk",
+        path    => $::path,
+        require => [
+          Exec['gethostid-run'],
+          File["C:\\generateciclicense.ahk"],
+        ],
+      }
+
+      # =====================
+      # -= Setup Assistant =-
+      # =====================
+
       notice("Running Setup Assistant...")
       file {'C:\\setupassistant.ahk':
         ensure  => file,
-        require => Exec['interactionfirmware-install-run'],
+        require => [
+          Exec['ciclicense-generate'],
+          Exec['interactionfirmware-install-run'],
+        ],
         content => template('inin-cic-install/setupassistant.ahk.erb'),
       }
       
@@ -92,6 +143,10 @@ class inin-cic-install {
         path    => $::path,
       }
       
+      # ==================
+      # -= Media Server =-
+      # ==================
+
       notice("Downloading Media Server")
       $mediaserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
       $mediaserver_install = url_parse($mediaserver_source, 'filename')
