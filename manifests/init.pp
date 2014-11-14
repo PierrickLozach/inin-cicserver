@@ -49,6 +49,14 @@ class inin-cic-install(
         provider => powershell,
       }
       
+      file {"C:\\I3\\IC":
+        ensure => directory,
+      }
+
+      file {"C:\\I3\\IC\\Logs":
+        ensure => directory,
+      }
+
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
         command  => "msiexec /i ${cicserver_install} PROMPTEDUSER=\$env:username PROMPTEDDOMAIN=\$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
@@ -143,6 +151,10 @@ class inin-cic-install(
       exec {"setupassistant-run":
         command => "cmd.exe /c C:\\setupassistant.ahk",
         path    => $::path,
+        require  => [
+          Exec['cicserver-install-run'],
+          Exec['interactionfirmware-install-run'],
+        ],
       }
       
       # ==================
@@ -172,7 +184,6 @@ class inin-cic-install(
         timeout  => 1800,
         require  => [
           Exec['mediaserver-install-download'],
-          Dism['NetFx3'],
         ],
       }
       
