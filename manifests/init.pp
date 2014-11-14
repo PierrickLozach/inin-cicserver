@@ -3,16 +3,16 @@
 # == Parameters
 #
 
-class inin-cic-install {
+class inin-cic-install(
+  $ensure	= installed,
+)
+{
 
   if ($operatingsystem != 'Windows')
   {
     err("This module works on Windows only!")
     fail("Unsupported OS")
   }
-  
-  validate_re($edition, ['^(?i)(express|standard|enterprise)$'])
-  validate_re($license_type, ['^(?i)(evaluation|MSDN|Volume|Retail)$'])
   
   case $ensure
   {
@@ -25,7 +25,7 @@ class inin-cic-install {
 
       notice("Ensuring .Net 3.5 is enabled")
       dism { 'NetFx3':
-        ensure => present,w
+        ensure => present,
         all => true,
       }
       
@@ -48,7 +48,7 @@ class inin-cic-install {
       
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command  => "msiexec /i ${core::cache_dir}/${cicserver_install} PROMPTEDUSER=$env:username PROMPTEDDOMAIN=$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE='C:\I3\IC' TRACING_LOGS='C:\I3\IC\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
+        command  => "msiexec /i \${core::cache_dir}/\${cicserver_install} PROMPTEDUSER=\$env:username PROMPTEDDOMAIN=\$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd      => "${core::cache_dir}",
         provider => windows,
@@ -189,7 +189,7 @@ class inin-cic-install {
       notice("Install Media Server license")
       #TODO GENERATE LICENSE FOR MEDIA SERVER
       
-      $mediaserver_licensefile = "C:\Users\Vagrant\Desktop\MediaServerLicense.i3lic"
+      $mediaserver_licensefile = "C:\\Users\\Vagrant\\Desktop\\MediaServerLicense.i3lic"
       registry::value { 'Media Server License':
         key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile',
         type    => string,
@@ -205,7 +205,7 @@ class inin-cic-install {
         ensure  => running,
         enable  => true,
         require => [
-          registry['Media Server License'],
+          Registry['Media Server License'],
         ],
       }
       
@@ -224,7 +224,7 @@ class inin-cic-install {
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
         \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", $secpasswd)
         
-        \$mediaserverPath = \"c:\i3\ic\resources\MediaServerConfig.xml\"
+        \$mediaserverPath = \"c:\\i3\\ic\\resources\\MediaServerConfig.xml\"
         \$commandServerCount = 0
         \$finishedLongWait = \$false;
 
@@ -282,10 +282,10 @@ class inin-cic-install {
             \$Shortcut.Save()
         }
         
-        CreateShortcut \"http://localhost:8084" "Media_Server\"
+        CreateShortcut \"http://localhost:8084\" \"Media_Server\"
         ",
-        require [
-          service['ININMediaServer'],
+        require => [
+          Service['ININMediaServer'],
         ],
       }
       
@@ -300,7 +300,7 @@ class inin-cic-install {
       
       file {"C:\\mediaserverpairing.ps1":
         ensure => absent,
-        require [
+        require => [
           Exec['mediaserver-pair-cic'],
         ],
       }
@@ -314,5 +314,5 @@ class inin-cic-install {
     {
       fail("Unsupported ensure \"${ensure}\"")
     }
-
+  }
 }
