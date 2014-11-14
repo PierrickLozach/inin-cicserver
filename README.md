@@ -8,6 +8,7 @@ This module installs CIC, Interaction Firmware and Media Server silently.
 Example:
 ```puppet
 class {'inin-cic-install':
+  ensure => installed,
 }
 ```
 
