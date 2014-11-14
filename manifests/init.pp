@@ -8,6 +8,8 @@ class inin-cic-install(
 )
 {
 
+  $downloads = "C:/Downloads"
+
   if ($operatingsystem != 'Windows')
   {
     err("This module works on Windows only!")
@@ -35,26 +37,26 @@ class inin-cic-install(
 
       notice("Downloading CIC Server")
       $cicserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\ICServer_2015_R1.msi'
-      $cicserver_install = url_parse($cicserver_source, 'filename')
+      $cicserver_install = 'ICServer_2015_R1.msi'
 
       exec {"cicserver-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${cicserver_source}','${core::cache_dir}/${cicserver_install}'))",
-        creates  => "${core::cache_dir}/${cicserver_install}",
+        command  => "((new-object net.webclient).DownloadFile('${cicserver_source}','${downloads}/${cicserver_install}'))",
+        creates  => "${downloads}/${cicserver_install}",
         provider => powershell,
         require  => [
-          File["${core::cache_dir}"],
+          File["${downloads}"],
           ],
       }
       
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command  => "msiexec /i \${core::cache_dir}/\${cicserver_install} PROMPTEDUSER=\$env:username PROMPTEDDOMAIN=\$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
+        command  => "msiexec /i \${downloads}/\${cicserver_install} PROMPTEDUSER=\$env:username PROMPTEDDOMAIN=\$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
         creates  => "C:/I3/IC/Server/NotifierU.exe",
-        cwd      => "${core::cache_dir}",
+        cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
         require  => [
-          File["${core::cache_dir}"],
+          File["${downloads}"],
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
@@ -66,27 +68,27 @@ class inin-cic-install(
 
       notice("Downloading Interaction Firmware")
       $interactionfirmware_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\InteractionFirwmare_2015_R1.msi'
-      $interactionfirmware_install = url_parse($interactionfirmware_source, 'filename')
+      $interactionfirmware_install = 'InteractionFirwmare_2015_R1.msi'
 
       exec {"interactionfirmware-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${interactionfirmware_source}','${core::cache_dir}/${interactionfirmware_install}'))",
-        creates  => "${core::cache_dir}/${interactionfirmware_install}",
+        command  => "((new-object net.webclient).DownloadFile('${interactionfirmware_source}','${downloads}/${interactionfirmware_install}'))",
+        creates  => "${downloads}/${interactionfirmware_install}",
         provider => powershell,
         require  => [
-          File["${core::cache_dir}"],
+          File["${downloads}"],
           Exec['cicserver-install-run'],
           ],
       }
 
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command  => "msiexec /i ${core::cache_dir}/${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart",
+        command  => "msiexec /i ${downloads}/${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart",
         creates  => "C:/I3/IC/Server/Firmware/.firmware???",
-        cwd      => "${core::cache_dir}",
+        cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
         require  => [
-          File["${core::cache_dir}"],
+          File["${downloads}"],
           Exec['interactionfirmware-install-download'],
           Dism['NetFx3'],
         ],
@@ -115,7 +117,7 @@ class inin-cic-install(
         content => template('inin-cic-install/generateciclicense.ahk.erb'),
       }
 
-      exec {"gethostid-run":
+      exec {"generateciclicense-run":
         command => "cmd.exe /c C:\\gethostid.ahk",
         path    => $::path,
         require => [
@@ -132,7 +134,7 @@ class inin-cic-install(
       file {'C:\\setupassistant.ahk':
         ensure  => file,
         require => [
-          Exec['ciclicense-generate'],
+          Exec['generateciclicense-run'],
           Exec['interactionfirmware-install-run'],
         ],
         content => template('inin-cic-install/setupassistant.ahk.erb'),
@@ -149,27 +151,27 @@ class inin-cic-install(
 
       notice("Downloading Media Server")
       $mediaserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
-      $mediaserver_install = url_parse($mediaserver_source, 'filename')
+      $mediaserver_install = 'MediaServer_2015_R1.msi'
 
       exec {"mediaserver-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${mediaserver_source}','${core::cache_dir}/${mediaserver_install}'))",
-        creates  => "${core::cache_dir}/${mediaserver_install}",
+        command  => "((new-object net.webclient).DownloadFile('${mediaserver_source}','${downloads}/${mediaserver_install}'))",
+        creates  => "${downloads}/${mediaserver_install}",
         provider => powershell,
         require  => [
-          File["${core::cache_dir}"],
+          File["${downloads}"],
           Exec['setupassistant-run'],
           ],
       }
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
-        command  => "msiexec /i ${core::cache_dir}/${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart",
+        command  => "msiexec /i ${downloads}/${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart",
         creates  => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
-        cwd      => "${core::cache_dir}",
+        cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
         require  => [
-          File["${core::cache_dir}"],
+          File["${downloads}"],
           Exec['mediaserver-install-download'],
           Dism['NetFx3'],
         ],
