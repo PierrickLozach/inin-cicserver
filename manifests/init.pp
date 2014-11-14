@@ -43,20 +43,17 @@ class inin-cic-install(
         command  => "((new-object net.webclient).DownloadFile('${cicserver_source}','${downloads}/${cicserver_install}'))",
         creates  => "${downloads}/${cicserver_install}",
         provider => powershell,
-        require  => [
-          File["${downloads}"],
-          ],
       }
       
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
         command  => "msiexec /i \${downloads}/\${cicserver_install} PROMPTEDUSER=\$env:username PROMPTEDDOMAIN=\$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
+	path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
         require  => [
-          File["${downloads}"],
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
@@ -75,7 +72,6 @@ class inin-cic-install(
         creates  => "${downloads}/${interactionfirmware_install}",
         provider => powershell,
         require  => [
-          File["${downloads}"],
           Exec['cicserver-install-run'],
           ],
       }
@@ -83,12 +79,12 @@ class inin-cic-install(
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
         command  => "msiexec /i ${downloads}/${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart",
+	path => $::path,
         creates  => "C:/I3/IC/Server/Firmware/.firmware???",
         cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
         require  => [
-          File["${downloads}"],
           Exec['interactionfirmware-install-download'],
           Dism['NetFx3'],
         ],
@@ -107,7 +103,7 @@ class inin-cic-install(
       exec {"gethostid-run":
         command => "cmd.exe /c C:\\gethostid.ahk",
         path    => $::path,
-        require => File["C:\\gethostid.ahk"],
+        require => File["C:/gethostid.ahk"],
       }
 
       notice("Generating CIC License...")
@@ -122,7 +118,7 @@ class inin-cic-install(
         path    => $::path,
         require => [
           Exec['gethostid-run'],
-          File["C:\\generateciclicense.ahk"],
+          File["C:/generateciclicense.ahk"],
         ],
       }
 
@@ -158,7 +154,6 @@ class inin-cic-install(
         creates  => "${downloads}/${mediaserver_install}",
         provider => powershell,
         require  => [
-          File["${downloads}"],
           Exec['setupassistant-run'],
           ],
       }
@@ -166,23 +161,21 @@ class inin-cic-install(
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
         command  => "msiexec /i ${downloads}/${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart",
+	path => $::path,
         creates  => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
         require  => [
-          File["${downloads}"],
           Exec['mediaserver-install-download'],
           Dism['NetFx3'],
         ],
       }
       
       notice("Setting web config login password")
-      registry::value { 'Media Server web config password':
-        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword',
+      registry_value { 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type    => string,
         data    => 'CA1E4FED70D14679362C37DF14F7C88A',
-        ensure  => present,
         require => [
           Exec['mediaserver-install-run'],
         ],
@@ -192,27 +185,25 @@ class inin-cic-install(
       #TODO GENERATE LICENSE FOR MEDIA SERVER
       
       $mediaserver_licensefile = "C:\\Users\\Vagrant\\Desktop\\MediaServerLicense.i3lic"
-      registry::value { 'Media Server License':
-        key     => 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile',
+      registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type    => string,
         data    => $mediaserver_licensefile,
-        ensure  => present,
         require => [
           Exec['mediaserver-install-run'],
         ],
       }
       
+      notify {'Media server is now licensed.':}
+
       notice("Starting Media Server")
       service { 'ININMediaServer':
         ensure  => running,
         enable  => true,
-        require => [
-          Registry['Media Server License'],
-        ],
+	require => Notify['Media server is now licensed.'],
       }
       
       notice("Pairing CIC and Media server")
-      $server=$facts['hostname']
+      $server=$::hostname
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
       $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=admin1&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
       
@@ -297,15 +288,10 @@ class inin-cic-install(
         require  => [
           File['mediaserver-pairing'],
           Exec['cicserver-install-run'],
-          ],
-      }
-      
-      file {"C:\\mediaserverpairing.ps1":
-        ensure => absent,
-        require => [
-          Exec['mediaserver-pair-cic'],
         ],
       }
+      
+      # DO SOME CLEANUP
       
     }
     uninstalled:
