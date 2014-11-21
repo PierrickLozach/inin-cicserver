@@ -166,8 +166,8 @@ class inin-cic-install(
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
-        command  => "msiexec /i ${downloads}\\/${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart",
-	path => $::path,
+        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
+	      path => $::path,
         creates  => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd      => "${downloads}",
         provider => windows,
