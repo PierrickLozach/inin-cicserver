@@ -80,9 +80,9 @@ class inin-cic-install(
 
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command  => "msiexec /i ${downloads}\\/${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart",
-	path => $::path,
-        creates  => "C:/I3/IC/Server/Firmware/.firmware???",
+        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
+	      path => $::path,
+        creates  => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
         cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
