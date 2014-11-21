@@ -68,8 +68,8 @@ class inin-cic-install(
       # ==========================
 
       notice("Downloading Interaction Firmware")
-      $interactionfirmware_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\InteractionFirwmare_2015_R1.msi'
-      $interactionfirmware_install = 'InteractionFirwmare_2015_R1.msi'
+      $interactionfirmware_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi'
+      $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
       exec {"interactionfirmware-install-download":
         command  => "((new-object net.webclient).DownloadFile('${interactionfirmware_source}','${downloads}\\/${interactionfirmware_install}'))",
