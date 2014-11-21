@@ -51,7 +51,7 @@ class inin-cic-install(
       
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command  => "msiexec /i ${cicserver_install} PROMPTEDUSER=\$env:username PROMPTEDDOMAIN=\$env:userdomain PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart",
+        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"vagrant\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"",
 	path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd      => "${downloads}",
