@@ -206,7 +206,7 @@ class inin-cic-install(
       	require => [
           Exec['mediaserver-install-run'],
           Notify['Media server is now licensed.'],
-        },
+        ],
       }
       
       notice("Pairing CIC and Media server")
