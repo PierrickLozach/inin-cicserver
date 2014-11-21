@@ -75,9 +75,6 @@ class inin-cic-install(
         command  => "((new-object net.webclient).DownloadFile('${interactionfirmware_source}','${downloads}\\/${interactionfirmware_install}'))",
         creates  => "${downloads}\\/${interactionfirmware_install}",
         provider => powershell,
-        require  => [
-          Exec['cicserver-install-run'],
-          ],
       }
 
       notice("Installing Interaction Firmware")
@@ -89,8 +86,8 @@ class inin-cic-install(
         provider => windows,
         timeout  => 1800,
         require  => [
+          Exec['cicserver-install-run'],
           Exec['interactionfirmware-install-download'],
-          Dism['NetFx3'],
         ],
       }
       
