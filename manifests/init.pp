@@ -203,7 +203,10 @@ class inin-cic-install(
       service { 'ININMediaServer':
         ensure  => running,
         enable  => true,
-	require => Notify['Media server is now licensed.'],
+      	require => [
+          Exec['mediaserver-install-run'],
+          Notify['Media server is now licensed.'],
+        },
       }
       
       notice("Pairing CIC and Media server")
