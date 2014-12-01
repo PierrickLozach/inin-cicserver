@@ -1,10 +1,10 @@
-# == class: puppet-cic-install
+# == class: cicserver
 #
 # == Parameters
 #
 
-class inin-cic-install(
-  $ensure	= installed,
+class cicserver (
+  $ensure = installed,
   $loggedonuserpassword,
 )
 {
@@ -53,7 +53,7 @@ class inin-cic-install(
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"",
-	path => $::path,
+  path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd      => "${downloads}",
         provider => windows,
@@ -81,7 +81,7 @@ class inin-cic-install(
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
-	      path => $::path,
+        path => $::path,
         creates  => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
         cwd      => "${downloads}",
         provider => windows,
@@ -99,7 +99,7 @@ class inin-cic-install(
       notice("Getting Host Id...")
       file {'C:\\gethostid.ahk':
         ensure    => file,
-        content   => template('inin-cic-install/gethostid.ahk.erb'),
+        content   => template('inin-cicserver/gethostid.ahk.erb'),
       }
       
       exec {"gethostid-run":
@@ -112,7 +112,7 @@ class inin-cic-install(
       file {'C:\\generateciclicense.ahk':
         ensure  => file,
         require => Exec['gethostid-run'],
-        content => template('inin-cic-install/generateciclicense.ahk.erb'),
+        content => template('inin-cicserver/generateciclicense.ahk.erb'),
       }
 
       exec {"generateciclicense-run":
@@ -135,7 +135,7 @@ class inin-cic-install(
           Exec['generateciclicense-run'],
           Exec['interactionfirmware-install-run'],
         ],
-        content => template('inin-cic-install/setupassistant.ahk.erb'),
+        content => template('inin-cicserver/setupassistant.ahk.erb'),
       }
       
       exec {"setupassistant-run":
@@ -167,7 +167,7 @@ class inin-cic-install(
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
-	      path => $::path,
+        path => $::path,
         creates  => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd      => "${downloads}",
         provider => windows,
@@ -204,7 +204,7 @@ class inin-cic-install(
       service { 'ININMediaServer':
         ensure  => running,
         enable  => true,
-      	require => [
+        require => [
           Exec['mediaserver-install-run'],
           Notify['Media server is now licensed.'],
         ],
