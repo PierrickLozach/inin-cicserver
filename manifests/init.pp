@@ -2,9 +2,21 @@
 #
 # == Parameters
 #
+# - ensure
+# - organization: CIC organization name
+# - location: CIC location name
+# - site: CIC site name
+# - outboundaddress: default outbound phone number
+# - loggedonuserpassword: password for the user running the Setup Assistant
+#
 
 class cicserver (
   $ensure = installed,
+  $media,
+  $organization,
+  $location,
+  $site,
+  $outboundaddress,
   $loggedonuserpassword,
 )
 {
@@ -41,7 +53,7 @@ class cicserver (
       # ================
 
       notice("Downloading CIC Server")
-      $cicserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\ICServer_2015_R1.msi'
+      $cicserver_source = '${media}\\Installs\\ServerComponents\\ICServer_2015_R1.msi'
       $cicserver_install = 'ICServer_2015_R1.msi'
 
       exec {"cicserver-install-download":
@@ -69,7 +81,7 @@ class cicserver (
       # ==========================
 
       notice("Downloading Interaction Firmware")
-      $interactionfirmware_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi'
+      $interactionfirmware_source = '${media}\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi'
       $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
       exec {"interactionfirmware-install-download":
@@ -99,7 +111,7 @@ class cicserver (
       notice("Getting Host Id...")
       file {'C:\\gethostid.ahk':
         ensure    => file,
-        content   => template('inin-cicserver/gethostid.ahk.erb'),
+        content   => template('cicserver/gethostid.ahk.erb'),
       }
       
       exec {"gethostid-run":
@@ -112,7 +124,7 @@ class cicserver (
       file {'C:\\generateciclicense.ahk':
         ensure  => file,
         require => Exec['gethostid-run'],
-        content => template('inin-cicserver/generateciclicense.ahk.erb'),
+        content => template('cicserver/generateciclicense.ahk.erb'),
       }
 
       exec {"generateciclicense-run":
@@ -135,7 +147,7 @@ class cicserver (
           Exec['generateciclicense-run'],
           Exec['interactionfirmware-install-run'],
         ],
-        content => template('inin-cicserver/setupassistant.ahk.erb'),
+        content => template('cicserver/setupassistant.ahk.erb'),
       }
       
       exec {"setupassistant-run":
@@ -152,7 +164,7 @@ class cicserver (
       # ==================
 
       notice("Downloading Media Server")
-      $mediaserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
+      $mediaserver_source = '${media}\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
       $mediaserver_install = 'MediaServer_2015_R1.msi'
 
       exec {"mediaserver-install-download":
