@@ -13,11 +13,11 @@
 class cicserver (
   $ensure = installed,
   $media,
-  $organization,
-  $location,
-  $site,
-  $outboundaddress,
-  $loggedonuserpassword,
+  $organization = "cicorg",
+  $location = "ciclocation",
+  $site = "cicsite",
+  $outboundaddress = "3178723000",
+  $loggedonuserpassword = "vagrant",
 )
 {
 
