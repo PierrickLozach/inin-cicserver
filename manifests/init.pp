@@ -66,34 +66,48 @@ class cicserver (
         mode        => '0770',
         owner       => 'Vagrant',
         group       => 'Administrators',
-        content     => "\$webClient = New-Object System.Net.webclient
-                        \$sourceURL = '${media}\\Installs\\ServerComponents\\${cicserver_install}'
+        content     => "\$sourceURL = '\\Installs\\ServerComponents\\${cicserver_install}'
                         \$destPath = '${downloads}\\${cicserver_install}'
                         
                         # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) {
-                          'File Exists'
+                        if ((Test-path \$destPath) -eq \$true) 
+                        {
+                          \$destPath + ' already exists'
                         }
-                        else {
-                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
-                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                        else 
+                        {
+                          # If the network drive exists, remove it
+                          if (Test-Path ININ:)
+                          {
+                            Remove-PSDrive ININ
                           }
-                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+
+                          \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                          \$credentials = New-Object System.Management.Automation.PSCredential('${username}', \$password)
+                          New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                          
+                          # Copy the file
+                          Copy-Item ININ:\$sourceURL ${downloads}
+
+                          # Remove the network drive
+                          if (Test-Path ININ:)
+                          {
+                            Remove-PSDrive ININ
+                          }
                         }",
-        before      => Exec ['DownloadCICServer'],
+        before      => Exec['cicserver-install-download'],
       }
 
-      exec { 'DownloadCICServer':
+      exec { "cicserver-install-download":
         command     => "${downloads}\\DownloadCICServer.ps1",
         creates     => "${downloads}\\${cicserver_install}",
         provider    => powershell,
-        before      => Package ['cicserver-install-run'],
+        before      => Exec['cicserver-install-run'],
       }
 
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"",
-  path => $::path,
+        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"", path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd      => "${downloads}",
         provider => windows,
@@ -117,28 +131,43 @@ class cicserver (
         mode        => '0770',
         owner       => 'Vagrant',
         group       => 'Administrators',
-        content     => "\$webClient = New-Object System.Net.webclient
-                        \$sourceURL = '${media}\\Installs\\ServerComponents\\${interactionfirmware_install}'
+        content     => "\$sourceURL = '\\Installs\\ServerComponents\\${interactionfirmware_install}'
                         \$destPath = '${downloads}\\${interactionfirmware_install}'
                         
                         # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) {
-                          'File Exists'
+                        if ((Test-path \$destPath) -eq \$true) 
+                        {
+                          \$destPath + ' already exists'
                         }
-                        else {
-                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
-                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                        else 
+                        {
+                          # If the network drive exists, remove it
+                          if (Test-Path ININ:)
+                          {
+                            Remove-PSDrive ININ
                           }
-                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+
+                          \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                          \$credentials = New-Object System.Management.Automation.PSCredential('${username}', \$password)
+                          New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                          
+                          # Copy the file
+                          Copy-Item ININ:\$sourceURL ${downloads}
+
+                          # Remove the network drive
+                          if (Test-Path ININ:)
+                          {
+                            Remove-PSDrive ININ
+                          }
                         }",
-        before      => Exec ['DownloadInteractionFirmware'],
+        before      => Exec['interactionfirmware-install-download''],
       }
 
-      exec { 'DownloadInteractionFirmware':
+      exec { "interactionfirmware-install-download":
         command     => "${downloads}\\DownloadInteractionFirmware.ps1",
         creates     => "${downloads}\\${interactionfirmware_install}",
         provider    => powershell,
-        before      => Package ['interactionfirmware-install-run'],
+        before      => Exec['interactionfirmware-install-run'],
       }
 
       notice("Installing Interaction Firmware")
@@ -222,24 +251,39 @@ class cicserver (
         mode        => '0770',
         owner       => 'Vagrant',
         group       => 'Administrators',
-        content     => "\$webClient = New-Object System.Net.webclient
-                        \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
+        content     => "\$sourceURL = '\\Installs\\ServerComponents\\${mediaserver_install}'
                         \$destPath = '${downloads}\\${mediaserver_install}'
                         
                         # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) {
-                          'File Exists'
+                        if ((Test-path \$destPath) -eq \$true) 
+                        {
+                          \$destPath + ' already exists'
                         }
-                        else {
-                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
-                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                        else 
+                        {
+                          # If the network drive exists, remove it
+                          if (Test-Path ININ:)
+                          {
+                            Remove-PSDrive ININ
                           }
-                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+
+                          \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                          \$credentials = New-Object System.Management.Automation.PSCredential('${username}', \$password)
+                          New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                          
+                          # Copy the file
+                          Copy-Item ININ:\$sourceURL ${downloads}
+
+                          # Remove the network drive
+                          if (Test-Path ININ:)
+                          {
+                            Remove-PSDrive ININ
+                          }
                         }",
-        before      => Exec ['DownloadMediaServer'],
+        before      => Exec['mediaserver-install-download'],
       }
 
-      exec { 'DownloadMediaServer':
+      exec { "mediaserver-install-download":
         command     => "${downloads}\\DownloadMediaServer.ps1",
         creates     => "${downloads}\\${mediaserver_install}",
         provider    => powershell,
@@ -255,18 +299,14 @@ class cicserver (
         cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
-        require  => [
-          Exec['mediaserver-install-download'],
-        ],
+        require  => Exec['mediaserver-install-download'],
       }
       
       notice("Setting web config login password")
       registry_value { 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type    => string,
         data    => 'CA1E4FED70D14679362C37DF14F7C88A',
-        require => [
-          Exec['mediaserver-install-run'],
-        ],
+        require => Exec['mediaserver-install-run'],
       }
       
       notice("Install Media Server license")
@@ -276,9 +316,7 @@ class cicserver (
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type    => string,
         data    => $mediaserver_licensefile,
-        require => [
-          Exec['mediaserver-install-run'],
-        ],
+        require => Exec['mediaserver-install-run'],
       }
       
       notify {'Media server is now licensed.':}
