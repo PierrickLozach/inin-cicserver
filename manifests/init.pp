@@ -3,6 +3,9 @@
 # == Parameters
 #
 # - ensure
+# - media: location of the ININ MSI files, should contain the Installs directory (i.e. "\\\\<SERVER>\\CIC_2015_R1")
+# - username: optional. Username to access the media location
+# - password: optional. Password to access the media location
 # - organization: CIC organization name
 # - location: CIC location name
 # - site: CIC site name
@@ -13,6 +16,8 @@
 class cicserver (
   $ensure = installed,
   $media,
+  $username,
+  $password,
   $organization = "cicorg",
   $location = "ciclocation",
   $site = "cicsite",
@@ -53,15 +58,38 @@ class cicserver (
       # ================
 
       notice("Downloading CIC Server")
-      $cicserver_source = '${media}\\Installs\\ServerComponents\\ICServer_2015_R1.msi'
-      $cicserver_install = 'ICServer_2015_R1.msi'
 
-      exec {"cicserver-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${cicserver_source}','${downloads}\\/${cicserver_install}'))",
-        creates  => "${downloads}\\/${cicserver_install}",
-        provider => powershell,
+      $cicserver_install = "ICServer_2015_R1.msi"
+
+      file { "${downloads}\\DownloadCICServer.ps1":
+        ensure      => 'file',
+        mode        => '0770',
+        owner       => 'Vagrant',
+        group       => 'Administrators',
+        content     => "\$webClient = New-Object System.Net.webclient
+                        \$sourceURL = '${media}\\Installs\\ServerComponents\\${cicserver_install}'
+                        \$destPath = '${downloads}\\${cicserver_install}'
+                        
+                        # Check to see if the file has been downloaded before, download the file only if it does not exist
+                        if ((Test-path \$destPath) -eq \$true) {
+                          'File Exists'
+                        }
+                        else {
+                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
+                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                          }
+                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                        }",
+        before      => Exec ['DownloadCICServer'],
       }
-      
+
+      exec { 'DownloadCICServer':
+        command     => "${downloads}\\DownloadCICServer.ps1",
+        creates     => "${downloads}\\${cicserver_install}",
+        provider    => powershell,
+        before      => Package ['cicserver-install-run'],
+      }
+
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"",
@@ -81,13 +109,36 @@ class cicserver (
       # ==========================
 
       notice("Downloading Interaction Firmware")
-      $interactionfirmware_source = '${media}\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi'
+
       $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
-      exec {"interactionfirmware-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${interactionfirmware_source}','${downloads}\\/${interactionfirmware_install}'))",
-        creates  => "${downloads}\\/${interactionfirmware_install}",
-        provider => powershell,
+      file { "${downloads}\\DownloadInteractionFirmware.ps1":
+        ensure      => 'file',
+        mode        => '0770',
+        owner       => 'Vagrant',
+        group       => 'Administrators',
+        content     => "\$webClient = New-Object System.Net.webclient
+                        \$sourceURL = '${media}\\Installs\\ServerComponents\\${interactionfirmware_install}'
+                        \$destPath = '${downloads}\\${interactionfirmware_install}'
+                        
+                        # Check to see if the file has been downloaded before, download the file only if it does not exist
+                        if ((Test-path \$destPath) -eq \$true) {
+                          'File Exists'
+                        }
+                        else {
+                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
+                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                          }
+                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                        }",
+        before      => Exec ['DownloadInteractionFirmware'],
+      }
+
+      exec { 'DownloadInteractionFirmware':
+        command     => "${downloads}\\DownloadInteractionFirmware.ps1",
+        creates     => "${downloads}\\${interactionfirmware_install}",
+        provider    => powershell,
+        before      => Package ['interactionfirmware-install-run'],
       }
 
       notice("Installing Interaction Firmware")
@@ -164,16 +215,36 @@ class cicserver (
       # ==================
 
       notice("Downloading Media Server")
-      $mediaserver_source = '${media}\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
       $mediaserver_install = 'MediaServer_2015_R1.msi'
 
-      exec {"mediaserver-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${mediaserver_source}','${downloads}\\/${mediaserver_install}'))",
-        creates  => "${downloads}\\/${mediaserver_install}",
-        provider => powershell,
-        require  => [
-          Exec['setupassistant-run'],
-          ],
+      file { "${downloads}\\DownloadMediaServer.ps1":
+        ensure      => 'file',
+        mode        => '0770',
+        owner       => 'Vagrant',
+        group       => 'Administrators',
+        content     => "\$webClient = New-Object System.Net.webclient
+                        \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
+                        \$destPath = '${downloads}\\${mediaserver_install}'
+                        
+                        # Check to see if the file has been downloaded before, download the file only if it does not exist
+                        if ((Test-path \$destPath) -eq \$true) {
+                          'File Exists'
+                        }
+                        else {
+                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
+                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                          }
+                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                        }",
+        before      => Exec ['DownloadMediaServer'],
+      }
+
+      exec { 'DownloadMediaServer':
+        command     => "${downloads}\\DownloadMediaServer.ps1",
+        creates     => "${downloads}\\${mediaserver_install}",
+        provider    => powershell,
+        before      => Package ['mediaserver-install-run'],
+        require     => Exec['setupassistant-run'],
       }
 
       notice("Installing Media Server")
