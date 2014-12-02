@@ -195,7 +195,7 @@ class cicserver (
       }
       
       exec {"gethostid-run":
-        command => "psexec -h -accepteula cmd.exe /c \"C:\\gethostid.ahk\"",
+        command => "\"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\"" C:\\gethostid.ahk",
         path    => $::path,
         require => File["C:/gethostid.ahk"],
       }
@@ -208,7 +208,7 @@ class cicserver (
       }
 
       exec {"generateciclicense-run":
-        command => "psexec -h -accepteula cmd.exe /c \"C:\\generateciclicense.ahk\"",
+        command => "\"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\"" C:\\generateciclicense.ahk",
         path    => $::path,
         require => [
           Exec['gethostid-run'],
