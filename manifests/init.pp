@@ -43,67 +43,92 @@ class cicserver (
       # -= Requirements =-
       # ==================
 
-      notice("Ensuring .Net 3.5 is enabled")
+      notice("Make sure .Net 3.5 is enabled")
       dism { 'NetFx3':
         ensure => present,
         all => true,
       }
-      
+
       file {"${downloads}":
         ensure => directory,
       }
 
-      # ================
-      # -= CIC Server =-
-      # ================
+      # =================
+      # -= CIC License =-
+      # =================
+      /*
+      notice("Getting Host Id...")
+      file {'C:\\gethostid.ahk':
+        ensure    => file,
+        content   => template('cicserver/gethostid.ahk.erb'),
+      }
+      
+      exec {"gethostid-run":
+        command => "psexec -h -accepteula \"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\" C:\\gethostid.ahk",
+        path    => $::path,
+        require => File["C:/gethostid.ahk"],
+      }
+
+      notice("Generating CIC License...")
+      file {'C:\\generateciclicense.ahk':
+        ensure  => file,
+        require => Exec['gethostid-run'],
+        content => template('cicserver/generateciclicense.ahk.erb'),
+      }
+
+      exec {"generateciclicense-run":
+        command => "psexec -h -accepteula \"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\" C:\\generateciclicense.ahk",
+        path    => $::path,
+        require => [
+          Exec['gethostid-run'],
+          File["C:/generateciclicense.ahk"],
+        ],
+      }
+      */
+
+      # =========================
+      # -= Download CIC Server -=
+      # =========================
 
       notice("Downloading CIC Server")
-
       $cicserver_install = "ICServer_2015_R1.msi"
-
       file { "${downloads}\\DownloadCICServer.ps1":
-        ensure      => 'file',
-        mode        => '0770',
-        owner       => 'Vagrant',
-        group       => 'Administrators',
-        content     => "\$sourceURL = '\\Installs\\ServerComponents\\${cicserver_install}'
-                        \$destPath = '${downloads}\\${cicserver_install}'
+        ensure    => 'file',
+        mode      => '0770',
+        owner     => 'Vagrant',
+        group     => 'Administrators',
+        content   => "\$destPath = '${downloads}\\${cicserver_install}'
                         
-                        # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) 
+                      if ((Test-path \$destPath) -eq \$true) 
+                      {
+                        \$destPath + ' already exists'
+                      }
+                      else 
+                      {
+                        if (Test-Path ININ:)
                         {
-                          \$destPath + ' already exists'
-                        }
-                        else 
-                        {
-                          # If the network drive exists, remove it
-                          if (Test-Path ININ:)
-                          {
-                            Remove-PSDrive ININ
-                          }
-
-                          \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
-                          \$credentials = New-Object System.Management.Automation.PSCredential('${username}', \$password)
-                          New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                          
-                          # Copy the file
-                          Copy-Item ININ:\$sourceURL ${downloads}
-
-                          # Remove the network drive
-                          if (Test-Path ININ:)
-                          {
-                            Remove-PSDrive ININ
-                          }
-                        }",
-        before      => Exec['cicserver-install-download'],
+                          Remove-PSDrive ININ
+                        }    
+                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
+                    
+                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                        Copy-Item ININ:\\Installs\\ServerComponents\\${cicserver_install} ${downloads}
+                        Remove-PSDrive ININ
+                      }",
+        require   => File["${downloads}"],
+        before    => Exec['cicserver-install-download'],
       }
 
       exec { "cicserver-install-download":
         command     => "${downloads}\\DownloadCICServer.ps1",
         creates     => "${downloads}\\${cicserver_install}",
         provider    => powershell,
-        before      => Exec['cicserver-install-run'],
       }
+
+      # ========================
+      # -= Install CIC Server -=
+      # ========================
 
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
@@ -118,58 +143,52 @@ class cicserver (
         ],
       }
       
-      # ==========================
-      # -= Interaction Firmware =-
-      # ==========================
+      # ===================================
+      # -= Download Interaction Firmware -=
+      # ===================================
 
       notice("Downloading Interaction Firmware")
 
       $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
       file { "${downloads}\\DownloadInteractionFirmware.ps1":
-        ensure      => 'file',
-        mode        => '0770',
-        owner       => 'Vagrant',
-        group       => 'Administrators',
-        content     => "\$sourceURL = '\\Installs\\ServerComponents\\${interactionfirmware_install}'
-                        \$destPath = '${downloads}\\${interactionfirmware_install}'
+        ensure    => 'file',
+        mode      => '0770',
+        owner     => 'Vagrant',
+        group     => 'Administrators',
+        content   => "\$destPath = '${downloads}\\${interactionfirmware_install}'
                         
-                        # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) 
+                      if ((Test-path \$destPath) -eq \$true) 
+                      {
+                        \$destPath + ' already exists'
+                      }
+                      else 
+                      {
+                        if (Test-Path ININ:)
                         {
-                          \$destPath + ' already exists'
-                        }
-                        else 
-                        {
-                          # If the network drive exists, remove it
-                          if (Test-Path ININ:)
-                          {
-                            Remove-PSDrive ININ
-                          }
-
-                          \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
-                          \$credentials = New-Object System.Management.Automation.PSCredential('${username}', \$password)
-                          New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                          
-                          # Copy the file
-                          Copy-Item ININ:\$sourceURL ${downloads}
-
-                          # Remove the network drive
-                          if (Test-Path ININ:)
-                          {
-                            Remove-PSDrive ININ
-                          }
-                        }",
-        before      => Exec['interactionfirmware-install-download''],
+                          Remove-PSDrive ININ
+                        }    
+                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
+                    
+                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                        Copy-Item ININ:\\Installs\\ServerComponents\\${interactionfirmware_install} ${downloads}
+                        Remove-PSDrive ININ
+                      }",
+        require   => File["${downloads}"],
+        before    => Exec['interactionfirmware-install-download'],
       }
 
-      exec { "interactionfirmware-install-download":
+      exec { 'interactionfirmware-install-download':
         command     => "${downloads}\\DownloadInteractionFirmware.ps1",
         creates     => "${downloads}\\${interactionfirmware_install}",
         provider    => powershell,
-        before      => Exec['interactionfirmware-install-run'],
       }
 
+      # ===================================
+      # -= Install Interaction Firmware -=
+      # ===================================
+      
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
@@ -183,38 +202,6 @@ class cicserver (
           Exec['interactionfirmware-install-download'],
         ],
       }
-      
-      # =================
-      # -= CIC License =-
-      # =================
-
-      notice("Getting Host Id...")
-      file {'C:\\gethostid.ahk':
-        ensure    => file,
-        content   => template('cicserver/gethostid.ahk.erb'),
-      }
-      
-      exec {"gethostid-run":
-        command => "\"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\"" C:\\gethostid.ahk",
-        path    => $::path,
-        require => File["C:/gethostid.ahk"],
-      }
-
-      notice("Generating CIC License...")
-      file {'C:\\generateciclicense.ahk':
-        ensure  => file,
-        require => Exec['gethostid-run'],
-        content => template('cicserver/generateciclicense.ahk.erb'),
-      }
-
-      exec {"generateciclicense-run":
-        command => "\"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\"" C:\\generateciclicense.ahk",
-        path    => $::path,
-        require => [
-          Exec['gethostid-run'],
-          File["C:/generateciclicense.ahk"],
-        ],
-      }
 
       # =====================
       # -= Setup Assistant =-
@@ -224,7 +211,7 @@ class cicserver (
       file {'C:\\setupassistant.ahk':
         ensure  => file,
         require => [
-          Exec['generateciclicense-run'],
+          #Exec['generateciclicense-run'],
           Exec['interactionfirmware-install-run'],
         ],
         content => template('cicserver/setupassistant.ahk.erb'),
@@ -251,43 +238,28 @@ class cicserver (
         mode        => '0770',
         owner       => 'Vagrant',
         group       => 'Administrators',
-        content     => "\$sourceURL = '\\Installs\\ServerComponents\\${mediaserver_install}'
+        content     => "\$webClient = New-Object System.Net.webclient
+                        \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
                         \$destPath = '${downloads}\\${mediaserver_install}'
                         
                         # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) 
-                        {
-                          \$destPath + ' already exists'
+                        if ((Test-path \$destPath) -eq \$true) {
+                          'File Exists'
                         }
-                        else 
-                        {
-                          # If the network drive exists, remove it
-                          if (Test-Path ININ:)
-                          {
-                            Remove-PSDrive ININ
+                        else {
+                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
+                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
                           }
-
-                          \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
-                          \$credentials = New-Object System.Management.Automation.PSCredential('${username}', \$password)
-                          New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                          
-                          # Copy the file
-                          Copy-Item ININ:\$sourceURL ${downloads}
-
-                          # Remove the network drive
-                          if (Test-Path ININ:)
-                          {
-                            Remove-PSDrive ININ
-                          }
+                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
                         }",
         before      => Exec['mediaserver-install-download'],
       }
 
-      exec { "mediaserver-install-download":
+      exec { 'mediaserver-install-download':
         command     => "${downloads}\\DownloadMediaServer.ps1",
         creates     => "${downloads}\\${mediaserver_install}",
         provider    => powershell,
-        before      => Package ['mediaserver-install-run'],
+        before      => Exec['mediaserver-install-run'],
         require     => Exec['setupassistant-run'],
       }
 
@@ -299,14 +271,18 @@ class cicserver (
         cwd      => "${downloads}",
         provider => windows,
         timeout  => 1800,
-        require  => Exec['mediaserver-install-download'],
+        require  => [
+          Exec['mediaserver-install-download'],
+        ],
       }
       
       notice("Setting web config login password")
       registry_value { 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type    => string,
         data    => 'CA1E4FED70D14679362C37DF14F7C88A',
-        require => Exec['mediaserver-install-run'],
+        require => [
+          Exec['mediaserver-install-run'],
+        ],
       }
       
       notice("Install Media Server license")
@@ -316,7 +292,9 @@ class cicserver (
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type    => string,
         data    => $mediaserver_licensefile,
-        require => Exec['mediaserver-install-run'],
+        require => [
+          Exec['mediaserver-install-run'],
+        ],
       }
       
       notify {'Media server is now licensed.':}
