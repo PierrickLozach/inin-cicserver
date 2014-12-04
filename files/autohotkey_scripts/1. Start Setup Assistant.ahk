@@ -5,4 +5,4 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ; ============================
 ; Start the IC Setup Assistant
 ; ============================
-Run "D:\I3\IC\Server\ICSetupU.exe"
+Run "C:\I3\IC\Server\ICSetupU.exe"

@@ -25,22 +25,18 @@ class cicserver (
   $loggedonuserpassword = "vagrant",
 )
 {
-
   $downloads = "C:\\Downloads"
-
   if ($operatingsystem != 'Windows')
   {
     err("This module works on Windows only!")
     fail("Unsupported OS")
   }
-  
   case $ensure
   {
     installed:
     {
-    
       # ==================
-      # -= Requirements =-
+      # -= Requirements -=
       # ==================
 
       notice("Make sure .Net 3.5 is enabled")
@@ -208,24 +204,36 @@ class cicserver (
       # =====================
 
       notice("Running Setup Assistant...")
-      file {'C:\\setupassistant.ahk':
-        ensure  => file,
-        require => [
-          #Exec['generateciclicense-run'],
+      # Setup Assistant requires a GUI interaction and fails if run through WinRM. So, we create a scheduled task to run the autohotkey scripts
+
+      scheduled_task {'setupassistant-scheduledtask':
+        name        => 'SetupAssistantRun',
+        ensure      => present,
+        enabled     => true,
+        provider    => win32_taskscheduler,
+        command     => 'C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\autohotkey_scripts\1. Start Setup Assistant.ahk',
+        trigger     => {
+          schedule    => once,
+          start_date  => '2014-01-01',
+          start_time  => '00:00', # must be specified
+        },
+        user        => 'vagrant',
+        password    => 'vagrant',
+        require     => [
+          #Exec['generateciclicense-run'], # re-enable when the licensing service will work
           Exec['interactionfirmware-install-run'],
         ],
-        content => template('cicserver/setupassistant.ahk.erb'),
       }
-      
-      exec {"setupassistant-run":
-        command => "cmd.exe /c C:\\setupassistant.ahk",
-        path    => $::path,
-        require  => [
-          Exec['cicserver-install-run'],
-          Exec['interactionfirmware-install-run'],
-        ],
+
+      exec { 'setupassistant-run':
+        command   => 'psexec -h -accepteula cmd /c schtasks /run /tn SetupAssistantRun',
+        path      => $::path,
+        cwd       => 'c:/windows/system32',
+        provider  => windows,
+        timeout   => 1800,
+        require   => Scheduled_task['setupassistant-scheduledtask'],
       }
-      
+
       # ==================
       # -= Media Server =-
       # ==================
