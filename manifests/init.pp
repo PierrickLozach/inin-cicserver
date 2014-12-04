@@ -211,7 +211,9 @@ class cicserver (
         ensure      => present,
         enabled     => true,
         provider    => win32_taskscheduler,
-        command     => 'C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\autohotkey_scripts\1. Start Setup Assistant.ahk',
+        command     => "C:\\Program Files\\Autohotkey\\Autohotkey.exe",
+        arguments   => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts\\0. master.ahk" "orgname" "locname" "sitename" "3178723000" "vagrant",
+        working_dir => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts",
         trigger     => {
           schedule    => once,
           start_date  => '2014-01-01',
@@ -225,13 +227,19 @@ class cicserver (
         ],
       }
 
-      exec { 'setupassistant-run':
+      exec {'setupassistant-run':
         command   => 'psexec -h -accepteula cmd /c schtasks /run /tn SetupAssistantRun',
         path      => $::path,
         cwd       => 'c:/windows/system32',
         provider  => windows,
-        timeout   => 1800,
+        timeout   => 3600,
         require   => Scheduled_task['setupassistant-scheduledtask'],
+      }
+
+      scheduled_task {'remove-setupassistant-scheduledtask':
+        name      => 'SetupAssistantRun',
+        ensure    => absent,
+        require   => Exec['setupassistant-run'],
       }
 
       # ==================
