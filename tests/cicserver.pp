@@ -8,4 +8,7 @@
 #
 # Learn more about module testing here: http://docs.puppetlabs.com/guides/tests_smoke.html
 #
-include cicserver
+class {'cicserver':
+	ensure => installed,
+	loggedonuserpassword => 'D0gf00d',
+}

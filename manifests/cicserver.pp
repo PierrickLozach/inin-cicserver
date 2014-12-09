@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # == class: cicserver
 #
 # == Parameters
@@ -14,16 +12,14 @@
 # - outboundaddress: default outbound phone number
 # - loggedonuserpassword: password for the user running the Setup Assistant
 #
-
->>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
 class cicserver (
   $ensure = installed,
   $media,
   $username,
   $password,
-  $organization = "cicorg",
-  $location = "ciclocation",
-  $site = "cicsite",
+  $organization = "organizationname",
+  $location = "locationname",
+  $site = "sitename",
   $outboundaddress = "3178723000",
   $loggedonuserpassword = "vagrant",
 )
@@ -206,55 +202,37 @@ class cicserver (
       # -= Setup Assistant =-
       # =====================
 
-      notice("Running Setup Assistant...")
-      # Setup Assistant requires a GUI interaction and fails if run through WinRM. So, we create a scheduled task to run the autohotkey scripts
-
-      scheduled_task {'setupassistant-scheduledtask':
-        name        => 'SetupAssistantRun',
-        ensure      => present,
-        enabled     => true,
-        provider    => win32_taskscheduler,
-        command     => "C:\\Program Files\\Autohotkey\\Autohotkey.exe",
-<<<<<<< HEAD
-        arguments   => '"0. master.ahk" "orgname" "locname" "sitename" "3178723000" "vagrant"',
-=======
-        arguments   => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts\\0. master.ahk" "orgname" "locname" "sitename" "3178723000" "vagrant",
->>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
-        working_dir => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts",
-        trigger     => {
-          schedule    => once,
-          start_date  => '2014-01-01',
-          start_time  => '00:00', # must be specified
-        },
-        user        => 'vagrant',
-        password    => 'vagrant',
-        require     => [
-          #Exec['generateciclicense-run'], # re-enable when the licensing service will work
-          Exec['interactionfirmware-install-run'],
-        ],
+      notice("Creating ICSurvey file...")
+      icsurvey {'icsurveyfile':
+        path                  => 'c:/Users/vagrant/Desktop/newsurvey.icsurvey',
+        installnodomain       => true,      
+        organizationname      => 'organizationname',
+        locationname          => 'locationname',
+        sitename              => 'sitename',
+        dbreporttype          => 'db',      
+        dbtablename           => 'I3_IC',
+        dialplanlocalareacode => '317',     
+        emailfbmc             => true,
+        recordingspath        => "c:\\I3\\IC\\Recordings",
+        sipnic                => 'Ethernet',
+        outboundaddress       => '3178723000',
+        defaulticpassword     => '1234',    
+        licensefile           => "c:\\users\\vagrant\\desktop\\iclicense.i3lic",  
+        hostid                => '6300270E26DF',
       }
 
+      notice("Running Setup Assistant...")
+
       exec {'setupassistant-run':
-        command   => 'psexec -h -accepteula cmd /c schtasks /run /tn SetupAssistantRun',
-        path      => $::path,
+        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"-f=newsurvey.icsurvey\"",
+        path      => "c:\\users\\vagrant\\desktop",
         cwd       => 'c:/windows/system32',
         provider  => windows,
         timeout   => 3600,
-        require   => Scheduled_task['setupassistant-scheduledtask'],
-      }
-
-<<<<<<< HEAD
-      exec {'remove-setupassistant-scheduledtask':
-        command   => 'psexec -h -accepteula cmd /c schtasks /delete /tn SetupAssistantRun',
-        path      => $::path,
-        cwd       => 'c:/windows/system32',
-        provider  => windows,
-=======
-      scheduled_task {'remove-setupassistant-scheduledtask':
-        name      => 'SetupAssistantRun',
-        ensure    => absent,
->>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
-        require   => Exec['setupassistant-run'],
+        require   => [
+          #Exec['generateciclicense-run'], # re-enable when the licensing service worka
+          Exec['interactionfirmware-install-run'],
+        ],
       }
 
       # ==================
