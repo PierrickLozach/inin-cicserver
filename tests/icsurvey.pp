@@ -1,0 +1,17 @@
+class {'pierrick-icsurvey':
+	path 					=> '/Users/pierrick.lozach/Desktop/newsurvey.icsurvey',
+	installnodomain			=> true,			
+	organizationname		=> 'organizationname',
+	locationname			=> 'locationname',
+	sitename				=> 'sitename',
+	dbreporttype			=> 'db', 			
+	dbtablename				=> 'I3_IC',
+	dialplanlocalareacode	=> '317',			
+	emailfbmc				=> true,
+	recordingspath			=> "c:\\I3\\IC\\Recordings",
+	sipnic					=> 'Ethernet',
+	outboundaddress			=> '3178723000',
+	defaulticpassword		=> '1234',		
+	licensefile				=> "c:\\users\\vagrant\\desktop\\iclicense.i3lic",	
+	hostid					=> '6300270E26DF',
+}
