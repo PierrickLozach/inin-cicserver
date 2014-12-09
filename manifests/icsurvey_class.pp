@@ -1,4 +1,4 @@
-# == Class: icsurvey
+# == Class: cicserver::icsurvey
 #
 # Creates an ICSurvey file for automation purposes to run the IC Setup Assistant silently
 #
@@ -67,7 +67,7 @@
 #
 # === Examples
 #
-#  class {'pierrick-icsurvey':
+#  class {'cicserver::icsurvey':
 #	path 					=> 'c:/users/vagrant/desktop/newsurvey.icsurvey',
 # 	cicservername			=> 'WIN-TESTMACHINE',
 # 	installnodomain			=> true,			
@@ -94,7 +94,7 @@
 #
 # Copyright 2015, Interactive Intelligence Inc.
 #
-class pierrick-icsurvey (
+class cicserver::icsurvey (
 	$path 					= 'c:/users/vagrant/desktop/NewSurvey.ICSurvey',
 	$installnodomain 		= true,
 	$organizationname		= 'organizationname',
@@ -136,7 +136,7 @@ class pierrick-icsurvey (
 			ensure 	=> present,
 	        path    => $path,
 	        mode    => '0777',
-	        content => template('pierrick-icsurvey/DefaultSurvey.ICSurvey.erb'),
+	        content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
 	      }
 
 }

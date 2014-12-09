@@ -1,4 +1,4 @@
-# icsurvey
+# cicserveric
 
 #### Table of Contents
 
@@ -15,8 +15,8 @@
 
 ## Overview
 
-Creates a CIC 2015R1+ ICSurvey file (.xml) to be used with the IC Setup Assistant on new installs.
-Also this module ican nstall CIC, Interaction Firmware and Media Server silently.
+Installs CIC, Interaction Firmware and Media Server silently.
+Also contains functionality to create ICSurvey files to run the Setup Assistant manually.
 
 ## Module Description
 
@@ -51,7 +51,7 @@ class {'cicserver':
 ```
 
 ```puppet
-class {'icsurvey':
+class {'cicserver::icsurvey':
 	path 					=> 'c:/users/vagrant/desktop/newsurvey.icsurvey',
 	installnodomain			=> true,				# set to true if no domain
 	organizationname		=> 'organizationname',

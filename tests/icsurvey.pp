@@ -1,4 +1,4 @@
-class {'pierrick-icsurvey':
+class {'cicserver::icsurvey':
 	path 					=> '/Users/pierrick.lozach/Desktop/newsurvey.icsurvey',
 	installnodomain			=> true,			
 	organizationname		=> 'organizationname',
