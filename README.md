@@ -1,4 +1,4 @@
-# cicserveric
+# cicserver
 
 #### Table of Contents
 

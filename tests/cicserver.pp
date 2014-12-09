@@ -1,14 +1,10 @@
-# The baseline for module testing used by Puppet Labs is that each manifest
-# should have a corresponding test manifest that declares that class or defined
-# type.
-#
-# Tests are then run by using puppet apply --noop (to check for compilation errors
-# and view a log of events) or by fully applying the test in a virtual environment
-# (to compare the resulting system state to the desired state).
-#
-# Learn more about module testing here: http://docs.puppetlabs.com/guides/tests_smoke.html
-#
 class {'cicserver':
-	ensure => installed,
-	loggedonuserpassword => 'D0gf00d',
+	ensure				=> installed,
+	media				=> "\\\\192.168.0.22\\ININ\\2015_R1\\CIC_2015_R1",
+	username			=> 'admin',
+	password			=> 'Vero052408',
+	organization 		=> 'organizationname',
+	location 			=> 'locationname',
+	site 				=> 'sitename',
+	outboundaddress		=> "3178723000",
 }

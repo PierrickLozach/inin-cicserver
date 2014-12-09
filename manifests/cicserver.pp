@@ -1,27 +1,129 @@
-# == class: cicserver
+# == Class: cicserver
 #
-# == Parameters
+# Installs CIC and other ININ products silently.
 #
-# - ensure
-# - media: location of the ININ MSI files, should contain the Installs directory (i.e. "\\\\<SERVER>\\CIC_2015_R1")
-# - username: optional. Username to access the media location
-# - password: optional. Password to access the media location
-# - organization: CIC organization name
-# - location: CIC location name
-# - site: CIC site name
-# - outboundaddress: default outbound phone number
-# - loggedonuserpassword: password for the user running the Setup Assistant
+# === Parameters
 #
+# [ensure]
+#   installed. No other values are currently supported.
+#
+# [media]
+#   location of the ININ MSI files. Should contain the Installs directory.
+#
+# [username]
+#   Optional. Username to access the media share specified previously.
+#
+# [password]
+#   Optional. Password to access the media share specified previously.
+#
+# [organization]
+#   Interaction Center Organization Name.
+#
+# [location]
+#   Interaction Center location name.
+#
+# [site]
+#   Interaction Center Site Name.
+#
+# [dbreporttype]
+#   Database report type. Only 'db' is supported for now.
+#
+# [dbservertype]
+#   Database server type. Only 'mssql' is supported for now.
+#
+# [dbtablename]
+#   Database table name. Defaults to I3_IC.
+#
+# [dialplanlocalareacode]
+#   local area code. Defaults to 317.
+#
+# [emailfbmc]
+#   Set to true to enable IC's FBMC (File Based Mail Connector). Defaults to false.
+#
+# [recordingspath]
+#   Path to store the compressed recordings. Defaults to C:/I3/IC/Recordings.
+#
+# [sipnic]
+#   Name of the network card (NIC) to use for SIP/RTP transport. Defaults to Ethernet.
+#
+# [outboundaddress]
+#   Phone number to show for outbound calls. Defaults to 3178723000.
+#
+# [defaulticpassword]
+#   Default IC user password. Defaults to 1234.
+#
+# [licensefile]
+#   Path to the .i3lic file
+#
+# [hostid]
+#   Host id to use with the license file
+#
+# === Variables
+#
+# Here you should define a list of variables that this module would require.
+#
+# [*sample_variable*]
+#   Explanation of how this variable affects the funtion of this class and if
+#   it has a default. e.g. "The parameter enc_ntp_servers must be set by the
+#   External Node Classifier as a comma separated list of hostnames." (Note,
+#   global variables should be avoided in favor of class parameters as
+#   of Puppet 2.6.)
+#
+# === Examples
+#
+#  class {'cicserver':
+#   ensure                => installed,
+#   media                 => '\\\\servername\\path_to_installs_folder',
+#   username              => '',
+#   password              => '',
+#   survey                => 'c:/users/vagrant/desktop/newsurvey.icsurvey',
+#   installnodomain       => true,      
+#   organizationname      => 'organizationname',
+#   locationname          => 'locationname',
+#   sitename              => 'sitename',
+#   dbreporttype          => 'db',     
+#   dbservertype          => 'mssql', 
+#   dbtablename           => 'I3_IC',
+#   dialplanlocalareacode => '317',     
+#   emailfbmc             => true,
+#   recordingspath        => "C:\\I3\\IC\\Recordings",
+#   sipnic                => 'Ethernet',
+#   outboundaddress       => '3178723000',
+#   defaulticpassword     => '1234',    
+#   licensefile           => "c:\\users\\vagrant\\desktop\\iclicense.i3lic",  
+#   hostid                => '6300270E26DF',
+#  }
+#
+# === Authors
+#
+# Pierrick Lozach <pierrick.lozach@inin.com>
+#
+# === Copyright
+#
+# Copyright 2015, Interactive Intelligence Inc.
+#
+
 class cicserver (
   $ensure = installed,
   $media,
   $username,
   $password,
-  $organization = "organizationname",
-  $location = "locationname",
-  $site = "sitename",
-  $outboundaddress = "3178723000",
-  $loggedonuserpassword = "vagrant",
+  $survey,
+  $installnodomain,
+  $organizationname,
+  $locationname,
+  $sitename,
+  $dbreporttype,
+  $dbservertype,
+  $dbtablename,
+  $dialplanlocalareacode,
+  $emailfbmc,
+  $recordingspath,
+  $sipnic,
+  $outboundaddress,
+  $defaulticpassword,
+  $licensefile,
+  $hostid,
 )
 {
   $downloads = "C:\\Downloads"
@@ -40,12 +142,12 @@ class cicserver (
 
       notice("Make sure .Net 3.5 is enabled")
       dism { 'NetFx3':
-        ensure => present,
-        all => true,
+        ensure  => present,
+        all     => true,
       }
 
       file {"${downloads}":
-        ensure => directory,
+        ensure  => directory,
       }
 
       # =================
@@ -116,9 +218,9 @@ class cicserver (
       }
 
       exec { "cicserver-install-download":
-        command     => "${downloads}\\DownloadCICServer.ps1",
-        creates     => "${downloads}\\${cicserver_install}",
-        provider    => powershell,
+        command   => "${downloads}\\DownloadCICServer.ps1",
+        creates   => "${downloads}\\${cicserver_install}",
+        provider  => powershell,
       }
 
       # ========================
@@ -175,9 +277,9 @@ class cicserver (
       }
 
       exec { 'interactionfirmware-install-download':
-        command     => "${downloads}\\DownloadInteractionFirmware.ps1",
-        creates     => "${downloads}\\${interactionfirmware_install}",
-        provider    => powershell,
+        command   => "${downloads}\\DownloadInteractionFirmware.ps1",
+        creates   => "${downloads}\\${interactionfirmware_install}",
+        provider  => powershell,
       }
 
       # ===================================
@@ -186,13 +288,13 @@ class cicserver (
       
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
-        path => $::path,
-        creates  => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
-        cwd      => "${downloads}",
-        provider => windows,
-        timeout  => 1800,
-        require  => [
+        command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
+        path      => $::path,
+        creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
+        cwd       => "${downloads}",
+        provider  => windows,
+        timeout   => 1800,
+        require   => [
           Exec['cicserver-install-run'],
           Exec['interactionfirmware-install-download'],
         ],
@@ -204,21 +306,21 @@ class cicserver (
 
       notice("Creating ICSurvey file...")
       icsurvey {'icsurveyfile':
-        path                  => 'c:/Users/vagrant/Desktop/newsurvey.icsurvey',
-        installnodomain       => true,      
-        organizationname      => 'organizationname',
-        locationname          => 'locationname',
-        sitename              => 'sitename',
-        dbreporttype          => 'db',      
-        dbtablename           => 'I3_IC',
-        dialplanlocalareacode => '317',     
-        emailfbmc             => true,
-        recordingspath        => "c:\\I3\\IC\\Recordings",
-        sipnic                => 'Ethernet',
-        outboundaddress       => '3178723000',
-        defaulticpassword     => '1234',    
-        licensefile           => "c:\\users\\vagrant\\desktop\\iclicense.i3lic",  
-        hostid                => '6300270E26DF',
+        path                  => ${survey}, # TODO Probably needs to move/generate this somewhere else
+        installnodomain       => ${installnodomain},
+        organizationname      => ${organizationname},
+        locationname          => ${locationname},
+        sitename              => ${sitename},
+        dbreporttype          => ${dbreporttype},      
+        dbtablename           => ${dbtablename},
+        dialplanlocalareacode => ${dialplanlocalareacode},
+        emailfbmc             => ${emailfbmc},
+        recordingspath        => ${recordingspath},
+        sipnic                => $sipnic,
+        outboundaddress       => ${outboundaddress},
+        defaulticpassword     => ${defaulticpassword},    
+        licensefile           => ${licensefile},  
+        hostid                => ${hostid},
       }
 
       notice("Running Setup Assistant...")
@@ -243,53 +345,53 @@ class cicserver (
       $mediaserver_install = 'MediaServer_2015_R1.msi'
 
       file { "${downloads}\\DownloadMediaServer.ps1":
-        ensure      => 'file',
-        mode        => '0770',
-        owner       => 'Vagrant',
-        group       => 'Administrators',
-        content     => "\$webClient = New-Object System.Net.webclient
-                        \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
-                        \$destPath = '${downloads}\\${mediaserver_install}'
-                        
-                        # Check to see if the file has been downloaded before, download the file only if it does not exist
-                        if ((Test-path \$destPath) -eq \$true) {
-                          'File Exists'
+        ensure    => 'file',
+        mode      => '0770',
+        owner     => 'Vagrant',
+        group     => 'Administrators',
+        content   => "\$webClient = New-Object System.Net.webclient
+                      \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
+                      \$destPath = '${downloads}\\${mediaserver_install}'
+                      
+                      # Check to see if the file has been downloaded before, download the file only if it does not exist
+                      if ((Test-path \$destPath) -eq \$true) {
+                        'File Exists'
+                      }
+                      else {
+                        if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
+                          \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
                         }
-                        else {
-                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
-                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
-                          }
-                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
-                        }",
-        before      => Exec['mediaserver-install-download'],
+                        \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                      }",
+        before    => Exec['mediaserver-install-download'],
       }
 
       exec { 'mediaserver-install-download':
-        command     => "${downloads}\\DownloadMediaServer.ps1",
-        creates     => "${downloads}\\${mediaserver_install}",
-        provider    => powershell,
-        before      => Exec['mediaserver-install-run'],
-        require     => Exec['setupassistant-run'],
+        command   => "${downloads}\\DownloadMediaServer.ps1",
+        creates   => "${downloads}\\${mediaserver_install}",
+        provider  => powershell,
+        before    => Exec['mediaserver-install-run'],
+        require   => Exec['setupassistant-run'],
       }
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
-        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
-        path => $::path,
-        creates  => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
-        cwd      => "${downloads}",
-        provider => windows,
-        timeout  => 1800,
-        require  => [
+        command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
+        path      => $::path,
+        creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
+        cwd       => "${downloads}",
+        provider  => windows,
+        timeout   => 1800,
+        require   => [
           Exec['mediaserver-install-download'],
         ],
       }
       
       notice("Setting web config login password")
       registry_value { 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
-        type    => string,
-        data    => 'CA1E4FED70D14679362C37DF14F7C88A',
-        require => [
+        type      => string,
+        data      => 'CA1E4FED70D14679362C37DF14F7C88A',
+        require   => [
           Exec['mediaserver-install-run'],
         ],
       }
@@ -299,9 +401,9 @@ class cicserver (
       
       $mediaserver_licensefile = "C:\\Users\\Vagrant\\Desktop\\MediaServerLicense.i3lic"
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
-        type    => string,
-        data    => $mediaserver_licensefile,
-        require => [
+        type      => string,
+        data      => $mediaserver_licensefile,
+        require   => [
           Exec['mediaserver-install-run'],
         ],
       }
@@ -310,23 +412,23 @@ class cicserver (
 
       notice("Starting Media Server")
       service { 'ININMediaServer':
-        ensure  => running,
-        enable  => true,
-        require => [
+        ensure    => running,
+        enable    => true,
+        require   => [
           Exec['mediaserver-install-run'],
           Notify['Media server is now licensed.'],
         ],
       }
       
       notice("Pairing CIC and Media server")
-      $server=$::hostname
+      $server = $::hostname
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
       $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=admin1&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
       
       file { "mediaserver-pairing":
-        ensure  => present,
-        path    => "C:\\mediaserverpairing.ps1",
-        content => "
+        ensure    => present,
+        path      => "C:\\mediaserverpairing.ps1",
+        content   => "
         
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
         \$uri = New-Object System.Uri (\$url)
@@ -393,15 +495,15 @@ class cicserver (
         
         CreateShortcut \"http://localhost:8084\" \"Media_Server\"
         ",
-        require => [
+        require   => [
           Service['ININMediaServer'],
         ],
       }
       
       exec {"mediaserver-pair-cic":
-        command  => "C:\\mediaserverpairing.ps1",
-        provider => powershell,
-        require  => [
+        command   => "C:\\mediaserverpairing.ps1",
+        provider  => powershell,
+        require   => [
           File['mediaserver-pairing'],
           Exec['cicserver-install-run'],
         ],

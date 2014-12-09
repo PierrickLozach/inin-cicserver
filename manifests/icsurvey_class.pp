@@ -4,8 +4,6 @@
 #
 # === Parameters
 #
-# Document parameters here.
-#
 # [path]
 #	Required. Full path to the output icsurvey file.
 #
@@ -13,13 +11,13 @@
 # 	Set to trure if no domain is configured.
 #
 # [organizationname]
-# 	Interaction Center Organization Name. Defaults to cicorg.
+# 	Interaction Center Organization Name. Defaults to organizationname.
 #
 # [locationname]
-# 	Interaction Center location name.
+# 	Interaction Center location name. Defaults to locationname.
 #
 # [sitename]
-#	Interaction Center Site Name. Defaults to cicsite.
+#	Interaction Center Site Name. Defaults to sitename.
 #
 # [dbreporttype]
 #	Database report type. Only 'db' is supported for now.
@@ -69,7 +67,6 @@
 #
 #  class {'cicserver::icsurvey':
 #	path 					=> 'c:/users/vagrant/desktop/newsurvey.icsurvey',
-# 	cicservername			=> 'WIN-TESTMACHINE',
 # 	installnodomain			=> true,			
 # 	organizationname		=> 'organizationname',
 # 	locationname			=> 'locationname',
