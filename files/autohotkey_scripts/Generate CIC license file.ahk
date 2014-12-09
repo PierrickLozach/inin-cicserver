@@ -15,8 +15,12 @@ SimplePing(URL, byref speed, timeout = 1000)
 
 if SimplePing("licgenwebserv",speed,200) <> "No response."
 {
+<<<<<<< HEAD
   	Msgbox, Run "C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000"
 	Run "C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000"
+=======
+  Msgbox, Run "C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000"
+>>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
 }
 else
 {

@@ -1,5 +1,5 @@
-inin-cic-install
-================
+inin-cicserver
+==============
 
 This module installs CIC, Interaction Firmware and Media Server silently.
 
@@ -7,7 +7,7 @@ This module installs CIC, Interaction Firmware and Media Server silently.
 
 Example:
 ```puppet
-class {'inin-cic-install':
+class {'cicserver':
   ensure => installed,
 }
 ```

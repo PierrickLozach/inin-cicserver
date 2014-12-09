@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+=======
+# == class: cicserver
+#
+# == Parameters
+#
+# - ensure
+# - media: location of the ININ MSI files, should contain the Installs directory (i.e. "\\\\<SERVER>\\CIC_2015_R1")
+# - username: optional. Username to access the media location
+# - password: optional. Password to access the media location
+# - organization: CIC organization name
+# - location: CIC location name
+# - site: CIC site name
+# - outboundaddress: default outbound phone number
+# - loggedonuserpassword: password for the user running the Setup Assistant
+#
+
+>>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
 class cicserver (
   $ensure = installed,
   $media,
@@ -197,7 +215,11 @@ class cicserver (
         enabled     => true,
         provider    => win32_taskscheduler,
         command     => "C:\\Program Files\\Autohotkey\\Autohotkey.exe",
+<<<<<<< HEAD
         arguments   => '"0. master.ahk" "orgname" "locname" "sitename" "3178723000" "vagrant"',
+=======
+        arguments   => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts\\0. master.ahk" "orgname" "locname" "sitename" "3178723000" "vagrant",
+>>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
         working_dir => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts",
         trigger     => {
           schedule    => once,
@@ -221,11 +243,17 @@ class cicserver (
         require   => Scheduled_task['setupassistant-scheduledtask'],
       }
 
+<<<<<<< HEAD
       exec {'remove-setupassistant-scheduledtask':
         command   => 'psexec -h -accepteula cmd /c schtasks /delete /tn SetupAssistantRun',
         path      => $::path,
         cwd       => 'c:/windows/system32',
         provider  => windows,
+=======
+      scheduled_task {'remove-setupassistant-scheduledtask':
+        name      => 'SetupAssistantRun',
+        ensure    => absent,
+>>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
         require   => Exec['setupassistant-run'],
       }
 

@@ -1,10 +1,10 @@
-#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+#NoEnv
+SendMode Input
+SetWorkingDir %A_ScriptDir%
 
 SimplePing(URL, timeout = 1000)
 {
-  Runwait,%comspec% /c ping -w %timeout% %url%>ping.log,,hide
+  Runwait, %comspec% /c ping -w %timeout% %url%>ping.log,,hide
   fileread , StrTemp, ping.log
   filedelete, ping.log
   if RegExMatch(StrTemp, "Average = (\d+)", result)
@@ -15,6 +15,7 @@ SimplePing(URL, timeout = 1000)
 
 if SimplePing("licgenwebserv") <> "No response."
 {
+<<<<<<< HEAD
 	RunWait, %comspec% /c C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000,,hide
 	FileMove, %A_ComputerName%.I3Lic, %A_Desktop%\License.I3Lic, 1
 }
@@ -22,3 +23,12 @@ else
 {
 	Exit, -1 ; Can't reach license server
 }
+=======
+  RunWait, %comspec% /c C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000,,hide
+  FileMove, %A_ComputerName%.I3Lic, %A_Desktop%\License.I3Lic, 1
+}
+else
+{
+  Exit, -1 ; Can't reach license server (licgenwebserv)
+}
+>>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1

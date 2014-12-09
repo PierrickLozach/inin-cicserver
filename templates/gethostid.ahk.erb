@@ -1,8 +1,12 @@
-#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+#NoEnv
+SendMode Input
+SetWorkingDir %A_ScriptDir%
 
 Run "C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\licensing\GetHostIDU\GetHostIDU.exe"
 Sleep 1000
 
+<<<<<<< HEAD
 ControlSend Edit1, {UP}{UP}{UP}{SHIFTDOWN}{CTRL DOWN}{RIGHT}{SHIFT UP}{CTRL UP}^c{TAB}{TAB}{TAB}{ENTER}, Host Identifier
+=======
+ControlSend Edit1, {UP}{UP}{UP}{SHIFTDOWN}{CTRL DOWN}{RIGHT}{SHIFT UP}{CTRL UP}^c{TAB}{TAB}{TAB}{ENTER}, Host Identifier
+>>>>>>> f03a2aa9698122eeea1454a615153ba6f42e97a1
