@@ -12,7 +12,9 @@ WinWaitActive, IC Setup Assistant,
 ; ====================
 ; Set the phone number
 ; ====================
-Send {tab}3178723000
+Send {tab}
+SendRaw %OutboundAddress%
+Sleep 50
 
 ; =====
 ; Next!

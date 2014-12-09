@@ -24,7 +24,10 @@ WinWaitActive, Update License,
 ; ===========================
 ; Specify License file to use
 ; ===========================
-Send %A_Desktop% \License.I3Lic{tab}{tab}{space}
+Sleep 100
+Send %A_Desktop%\License.I3Lic
+Sleep 100
+Send {tab}{tab}{enter}
 
 ; =====
 ; Next!

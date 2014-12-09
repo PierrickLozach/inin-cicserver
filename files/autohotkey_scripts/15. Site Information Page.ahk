@@ -12,8 +12,12 @@ WinWaitActive, IC Setup Assistant,
 ; =======================
 ; Organization & Location
 ; =======================
-Send TestOrganization{tab}
-Send TestLocation{tab}
+SendRaw %OrganizationName%
+Sleep 50
+Send {tab}
+SendRaw %LocationName%
+Sleep 50
+Send {tab}
 
 ; =====
 ; Next!

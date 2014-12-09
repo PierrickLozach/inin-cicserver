@@ -1,59 +1,119 @@
-# == class: puppet-cic-install
-#
-# == Parameters
-#
-
-class inin-cic-install(
-  $ensure	= installed,
-  $loggedonuserpassword,
+class cicserver (
+  $ensure = installed,
+  $media,
+  $username,
+  $password,
+  $organization = "cicorg",
+  $location = "ciclocation",
+  $site = "cicsite",
+  $outboundaddress = "3178723000",
+  $loggedonuserpassword = "vagrant",
 )
 {
-
   $downloads = "C:\\Downloads"
-
   if ($operatingsystem != 'Windows')
   {
     err("This module works on Windows only!")
     fail("Unsupported OS")
   }
-  
   case $ensure
   {
     installed:
     {
-    
       # ==================
-      # -= Requirements =-
+      # -= Requirements -=
       # ==================
 
-      notice("Ensuring .Net 3.5 is enabled")
+      notice("Make sure .Net 3.5 is enabled")
       dism { 'NetFx3':
         ensure => present,
         all => true,
       }
-      
+
       file {"${downloads}":
         ensure => directory,
       }
 
-      # ================
-      # -= CIC Server =-
-      # ================
-
-      notice("Downloading CIC Server")
-      $cicserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\ICServer_2015_R1.msi'
-      $cicserver_install = 'ICServer_2015_R1.msi'
-
-      exec {"cicserver-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${cicserver_source}','${downloads}\\/${cicserver_install}'))",
-        creates  => "${downloads}\\/${cicserver_install}",
-        provider => powershell,
+      # =================
+      # -= CIC License =-
+      # =================
+      /*
+      notice("Getting Host Id...")
+      file {'C:\\gethostid.ahk':
+        ensure    => file,
+        content   => template('cicserver/gethostid.ahk.erb'),
       }
       
+      exec {"gethostid-run":
+        command => "psexec -h -accepteula \"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\" C:\\gethostid.ahk",
+        path    => $::path,
+        require => File["C:/gethostid.ahk"],
+      }
+
+      notice("Generating CIC License...")
+      file {'C:\\generateciclicense.ahk':
+        ensure  => file,
+        require => Exec['gethostid-run'],
+        content => template('cicserver/generateciclicense.ahk.erb'),
+      }
+
+      exec {"generateciclicense-run":
+        command => "psexec -h -accepteula \"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\" C:\\generateciclicense.ahk",
+        path    => $::path,
+        require => [
+          Exec['gethostid-run'],
+          File["C:/generateciclicense.ahk"],
+        ],
+      }
+      */
+
+      # =========================
+      # -= Download CIC Server -=
+      # =========================
+
+      notice("Downloading CIC Server")
+      $cicserver_install = "ICServer_2015_R1.msi"
+      file { "${downloads}\\DownloadCICServer.ps1":
+        ensure    => 'file',
+        mode      => '0770',
+        owner     => 'Vagrant',
+        group     => 'Administrators',
+        content   => "\$destPath = '${downloads}\\${cicserver_install}'
+                        
+                      if ((Test-path \$destPath) -eq \$true) 
+                      {
+                        \$destPath + ' already exists'
+                      }
+                      else 
+                      {
+                        if (Test-Path ININ:)
+                        {
+                          Remove-PSDrive ININ
+                        }    
+                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
+                    
+                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                        Copy-Item ININ:\\Installs\\ServerComponents\\${cicserver_install} ${downloads}
+                        Remove-PSDrive ININ
+                      }",
+        require   => File["${downloads}"],
+        before    => Exec['cicserver-install-download'],
+      }
+
+      exec { "cicserver-install-download":
+        command     => "${downloads}\\DownloadCICServer.ps1",
+        creates     => "${downloads}\\${cicserver_install}",
+        provider    => powershell,
+      }
+
+      # ========================
+      # -= Install CIC Server -=
+      # ========================
+
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"",
-	path => $::path,
+        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"", path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd      => "${downloads}",
         provider => windows,
@@ -64,24 +124,56 @@ class inin-cic-install(
         ],
       }
       
-      # ==========================
-      # -= Interaction Firmware =-
-      # ==========================
+      # ===================================
+      # -= Download Interaction Firmware -=
+      # ===================================
 
       notice("Downloading Interaction Firmware")
-      $interactionfirmware_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi'
+
       $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
-      exec {"interactionfirmware-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${interactionfirmware_source}','${downloads}\\/${interactionfirmware_install}'))",
-        creates  => "${downloads}\\/${interactionfirmware_install}",
-        provider => powershell,
+      file { "${downloads}\\DownloadInteractionFirmware.ps1":
+        ensure    => 'file',
+        mode      => '0770',
+        owner     => 'Vagrant',
+        group     => 'Administrators',
+        content   => "\$destPath = '${downloads}\\${interactionfirmware_install}'
+                        
+                      if ((Test-path \$destPath) -eq \$true) 
+                      {
+                        \$destPath + ' already exists'
+                      }
+                      else 
+                      {
+                        if (Test-Path ININ:)
+                        {
+                          Remove-PSDrive ININ
+                        }    
+                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
+                    
+                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                        Copy-Item ININ:\\Installs\\ServerComponents\\${interactionfirmware_install} ${downloads}
+                        Remove-PSDrive ININ
+                      }",
+        require   => File["${downloads}"],
+        before    => Exec['interactionfirmware-install-download'],
       }
 
+      exec { 'interactionfirmware-install-download':
+        command     => "${downloads}\\DownloadInteractionFirmware.ps1",
+        creates     => "${downloads}\\${interactionfirmware_install}",
+        provider    => powershell,
+      }
+
+      # ===================================
+      # -= Install Interaction Firmware -=
+      # ===================================
+      
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
-	      path => $::path,
+        path => $::path,
         creates  => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
         cwd      => "${downloads}",
         provider => windows,
@@ -91,83 +183,93 @@ class inin-cic-install(
           Exec['interactionfirmware-install-download'],
         ],
       }
-      
-      # =================
-      # -= CIC License =-
-      # =================
-
-      notice("Getting Host Id...")
-      file {'C:\\gethostid.ahk':
-        ensure    => file,
-        content   => template('inin-cic-install/gethostid.ahk.erb'),
-      }
-      
-      exec {"gethostid-run":
-        command => "cmd.exe /c C:\\gethostid.ahk",
-        path    => $::path,
-        require => File["C:/gethostid.ahk"],
-      }
-
-      notice("Generating CIC License...")
-      file {'C:\\generateciclicense.ahk':
-        ensure  => file,
-        require => Exec['gethostid-run'],
-        content => template('inin-cic-install/generateciclicense.ahk.erb'),
-      }
-
-      exec {"generateciclicense-run":
-        command => "cmd.exe /c C:\\gethostid.ahk",
-        path    => $::path,
-        require => [
-          Exec['gethostid-run'],
-          File["C:/generateciclicense.ahk"],
-        ],
-      }
 
       # =====================
       # -= Setup Assistant =-
       # =====================
 
       notice("Running Setup Assistant...")
-      file {'C:\\setupassistant.ahk':
-        ensure  => file,
-        require => [
-          Exec['generateciclicense-run'],
+      # Setup Assistant requires a GUI interaction and fails if run through WinRM. So, we create a scheduled task to run the autohotkey scripts
+
+      scheduled_task {'setupassistant-scheduledtask':
+        name        => 'SetupAssistantRun',
+        ensure      => present,
+        enabled     => true,
+        provider    => win32_taskscheduler,
+        command     => "C:\\Program Files\\Autohotkey\\Autohotkey.exe",
+        arguments   => '"0. master.ahk" "orgname" "locname" "sitename" "3178723000" "vagrant"',
+        working_dir => "C:\\ProgramData\\PuppetLabs\\puppet\\etc\\modules\\cicserver\\files\\autohotkey_scripts",
+        trigger     => {
+          schedule    => once,
+          start_date  => '2014-01-01',
+          start_time  => '00:00', # must be specified
+        },
+        user        => 'vagrant',
+        password    => 'vagrant',
+        require     => [
+          #Exec['generateciclicense-run'], # re-enable when the licensing service will work
           Exec['interactionfirmware-install-run'],
         ],
-        content => template('inin-cic-install/setupassistant.ahk.erb'),
       }
-      
-      exec {"setupassistant-run":
-        command => "cmd.exe /c C:\\setupassistant.ahk",
-        path    => $::path,
-        require  => [
-          Exec['cicserver-install-run'],
-          Exec['interactionfirmware-install-run'],
-        ],
+
+      exec {'setupassistant-run':
+        command   => 'psexec -h -accepteula cmd /c schtasks /run /tn SetupAssistantRun',
+        path      => $::path,
+        cwd       => 'c:/windows/system32',
+        provider  => windows,
+        timeout   => 3600,
+        require   => Scheduled_task['setupassistant-scheduledtask'],
       }
-      
+
+      exec {'remove-setupassistant-scheduledtask':
+        command   => 'psexec -h -accepteula cmd /c schtasks /delete /tn SetupAssistantRun',
+        path      => $::path,
+        cwd       => 'c:/windows/system32',
+        provider  => windows,
+        require   => Exec['setupassistant-run'],
+      }
+
       # ==================
       # -= Media Server =-
       # ==================
 
       notice("Downloading Media Server")
-      $mediaserver_source = '\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi'
       $mediaserver_install = 'MediaServer_2015_R1.msi'
 
-      exec {"mediaserver-install-download":
-        command  => "((new-object net.webclient).DownloadFile('${mediaserver_source}','${downloads}\\/${mediaserver_install}'))",
-        creates  => "${downloads}\\/${mediaserver_install}",
-        provider => powershell,
-        require  => [
-          Exec['setupassistant-run'],
-          ],
+      file { "${downloads}\\DownloadMediaServer.ps1":
+        ensure      => 'file',
+        mode        => '0770',
+        owner       => 'Vagrant',
+        group       => 'Administrators',
+        content     => "\$webClient = New-Object System.Net.webclient
+                        \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
+                        \$destPath = '${downloads}\\${mediaserver_install}'
+                        
+                        # Check to see if the file has been downloaded before, download the file only if it does not exist
+                        if ((Test-path \$destPath) -eq \$true) {
+                          'File Exists'
+                        }
+                        else {
+                          if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
+                            \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
+                          }
+                          \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                        }",
+        before      => Exec['mediaserver-install-download'],
+      }
+
+      exec { 'mediaserver-install-download':
+        command     => "${downloads}\\DownloadMediaServer.ps1",
+        creates     => "${downloads}\\${mediaserver_install}",
+        provider    => powershell,
+        before      => Exec['mediaserver-install-run'],
+        require     => Exec['setupassistant-run'],
       }
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
-	      path => $::path,
+        path => $::path,
         creates  => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd      => "${downloads}",
         provider => windows,
@@ -204,7 +306,7 @@ class inin-cic-install(
       service { 'ININMediaServer':
         ensure  => running,
         enable  => true,
-      	require => [
+        require => [
           Exec['mediaserver-install-run'],
           Notify['Media server is now licensed.'],
         ],

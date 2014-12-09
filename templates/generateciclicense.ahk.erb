@@ -2,7 +2,7 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-SimplePing(URL, byref speed, timeout = 1000)
+SimplePing(URL, timeout = 1000)
 {
   Runwait,%comspec% /c ping -w %timeout% %url%>ping.log,,hide
   fileread , StrTemp, ping.log
@@ -13,11 +13,12 @@ SimplePing(URL, byref speed, timeout = 1000)
     return "No response."
 }
 
-if SimplePing("licgenwebserv",speed,200) <> "No response."
+if SimplePing("licgenwebserv") <> "No response."
 {
-  Msgbox, Run "..\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000 > %A_Desktop% \License.I3Lic"
+	RunWait, %comspec% /c C:\ProgramData\PuppetLabs\puppet\etc\modules\cicserver\files\licensing\LicGenClient\LicGenClient.exe -hostid %clipboard% -hostname %A_ComputerName% -version 4 -fulllic 1000,,hide
+	FileMove, %A_ComputerName%.I3Lic, %A_Desktop%\License.I3Lic, 1
 }
 else
 {
-  Msgbox Can't reach license server (licgenwebserv)
+	Exit, -1 ; Can't reach license server
 }

@@ -20,15 +20,15 @@ RegDelete, HKEY_LOCAL_MACHINE, SOFTWARE\Interactive Intelligence\Setup Assistant
 RegDelete, HKEY_LOCAL_MACHINE, SOFTWARE\Interactive Intelligence\Setup Assistant, ICServerVersionInstalled
 
 ;Delete Manifest file
-if fileexist("D:\I3\IC\Manifest\New Survey.ICSurvey")
+if fileexist("c:\I3\IC\Manifest\New Survey.ICSurvey")
 {
-  filedelete, D:\I3\IC\Manifest\New Survey.ICSurvey
+  filedelete, c:\I3\IC\Manifest\New Survey.ICSurvey
 }
 
 ;Delete default IC License file
-if fileexist("D:\I3\IC\CurrentLicenseAdmin.I3Lic")
+if fileexist("c:\I3\IC\CurrentLicenseAdmin.I3Lic")
 {
-  filedelete, D:\I3\IC\CurrentLicenseAdmin.I3Lic
+  filedelete, c:\I3\IC\CurrentLicenseAdmin.I3Lic
 }
 
 ;Delete PuppetStation

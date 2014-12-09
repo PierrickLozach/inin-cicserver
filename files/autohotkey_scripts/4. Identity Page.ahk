@@ -12,4 +12,6 @@ WinWaitActive, IC Setup Assistant,
 ; ============================
 ; Enter Administrator password
 ; ============================
-Send {SHIFTDOWN}d{SHIFTUP}0gf00d{tab}{tab}{space}
+SendRaw %LoggedOnUserPassword%
+Sleep 50
+Send {tab}{tab}{space}

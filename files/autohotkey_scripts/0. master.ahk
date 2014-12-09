@@ -1,16 +1,21 @@
-;
-; AutoHotkey Version: 1.x
-; Language:       English
-; Platform:       Win9x/NT
-; Author:         A.N.Other <myemail@nowhere.com>
-;
-; Script Function:
-;	Template script (you can customize this template by editing "ShellNew\Template.ahk" in your Windows folder)
-;
-
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+; ================
+; Check parameters
+; ================
+if %0% < 5
+{
+  MsgBox Too few parameters
+  Exit -1
+}
+
+OrganizationName      = %1%
+LocationName          = %2%
+SiteName              = %3%
+OutboundAddress       = %4%
+LoggedOnUserPassword  = %5%
 
 ; ==================
 ; Kill Other Scripts
@@ -61,29 +66,29 @@ SetBatchLines -1
 
 ;----- Functions -----
 AHKPanic(Kill=0, Pause=0, Suspend=0, SelfToo=0) {
-DetectHiddenWindows, On
-WinGet, IDList ,List, ahk_class AutoHotkey
-Loop %IDList%
+  DetectHiddenWindows, On
+  WinGet, IDList ,List, ahk_class AutoHotkey
+  Loop %IDList%
   {
-  ID:=IDList%A_Index%
-  WinGetTitle, ATitle, ahk_id %ID%
-  IfNotInString, ATitle, %A_ScriptFullPath%
+    ID:=IDList%A_Index%
+    WinGetTitle, ATitle, ahk_id %ID%
+    IfNotInString, ATitle, %A_ScriptFullPath%
     {
-    If Suspend
-      PostMessage, 0x111, 65305,,, ahk_id %ID%  ; Suspend. 
-    If Pause
-      PostMessage, 0x111, 65306,,, ahk_id %ID%  ; Pause.
-    If Kill
-      WinClose, ahk_id %ID% ;kill
+      If Suspend
+        PostMessage, 0x111, 65305,,, ahk_id %ID%  ; Suspend. 
+      If Pause
+        PostMessage, 0x111, 65306,,, ahk_id %ID%  ; Pause.
+      If Kill
+        WinClose, ahk_id %ID% ;kill
     }
   }
-If SelfToo
+  If SelfToo
   {
-  If Suspend
-    Suspend, Toggle  ; Suspend. 
-  If Pause
-    Pause, Toggle, 1  ; Pause.
-  If Kill
-    ExitApp
+    If Suspend
+      Suspend, Toggle  ; Suspend. 
+    If Pause
+      Pause, Toggle, 1  ; Pause.
+    If Kill
+      ExitApp
   }
 }
