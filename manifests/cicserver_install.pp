@@ -1,4 +1,4 @@
-# == Class: cicserver
+# == Class: cicserver::install
 #
 # Installs CIC and other ININ products silently.
 #
@@ -71,7 +71,7 @@
 #
 # === Examples
 #
-#  class {'cicserver':
+#  class {'cicserver::install':
 #   ensure                => installed,
 #   media                 => '\\\\servername\\path_to_installs_folder',
 #   username              => '',
@@ -103,7 +103,7 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 
-class cicserver (
+class cicserver::install (
   $ensure = installed,
   $media,
   $username,
@@ -305,27 +305,35 @@ class cicserver (
 
       notice("Creating ICSurvey file...")
       icsurvey {'icsurveyfile':
-        path                  => ${survey}, # TODO Probably needs to move/generate this somewhere else
-        installnodomain       => ${installnodomain},
-        organizationname      => ${organizationname},
-        locationname          => ${locationname},
-        sitename              => ${sitename},
-        dbreporttype          => ${dbreporttype},      
-        dbtablename           => ${dbtablename},
-        dialplanlocalareacode => ${dialplanlocalareacode},
-        emailfbmc             => ${emailfbmc},
-        recordingspath        => ${recordingspath},
+        path                  => $survey, # TODO Probably needs to move/generate this somewhere else
+        installnodomain       => $installnodomain,
+        organizationname      => $organizationname,
+        locationname          => $locationname,
+        sitename              => $sitename,
+        dbreporttype          => $dbreporttype,      
+        dbtablename           => $dbtablename,
+        dialplanlocalareacode => $dialplanlocalareacode,
+        emailfbmc             => $emailfbmc,
+        recordingspath        => $recordingspath,
         sipnic                => $sipnic,
-        outboundaddress       => ${outboundaddress},
-        defaulticpassword     => ${defaulticpassword},    
-        licensefile           => ${licensefile},  
-        hostid                => ${hostid},
+        outboundaddress       => $outboundaddress,
+        defaulticpassword     => $defaulticpassword,    
+        licensefile           => $licensefile,  
+        hostid                => $hostid,
       }
 
       notice("Running Setup Assistant...")
 
+      # Run the complete IC Setup Assistant
+      registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\Setup Assistant\Complete':
+        type      => dword,
+        data      => 0,
+        before    => Exec['setupassistant-run'],
+      }
+
+      # Go!
       exec {'setupassistant-run':
-        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"-f=${survey}\"", # TODO check command parameters (-f?)
+        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=${survey}\"", # TODO check command parameters (-f?)
         path      => dirname('${survey}'),
         cwd       => $::system32,
         provider  => windows,
