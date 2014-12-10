@@ -1,12 +1,15 @@
-# cicserver
+# cicserver::install
+# cicserver::icsurvey
 
 #### Table of Contents
 
 1. [Overview](#overview)
-2. [Module Description - What the module does and why it is useful](#module-description)
-3. [Setup - The basics of getting started with icsurvey](#setup)
+2. [Module Description - What the modules do and why it is useful](#module-description)
+3. [Setup - The basics of getting started with cicserver::install and cicserver::icsurvey](#setup)
+    * [What install affects](#what-install-affects)
     * [What icsurvey affects](#what-icsurvey-affects)
     * [Setup requirements](#setup-requirements)
+    * [Beginning with install](#beginning-with-install)
     * [Beginning with icsurvey](#beginning-with-icsurvey)
 4. [Usage - Configuration options and additional functionality](#usage)
 5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
@@ -24,6 +27,11 @@ Uses ruby to create an xml file with the options pre-populated from a template (
 
 ## Setup
 
+### What install affects
+
+* Installs CIC, Interaction Firmware and Media Server.
+* Warning: not recommended for production environments.
+
 ### What icsurvey affects
 
 * Creates an .icsurvey file.
@@ -33,6 +41,14 @@ Uses ruby to create an xml file with the options pre-populated from a template (
 
 If your module requires anything extra before setting up (pluginsync enabled,
 etc.), mention it here.
+
+### Beginning with install
+
+The very basic steps needed for a user to get the module up and running.
+
+If your most recent release breaks compatibility or requires particular steps
+for upgrading, you may wish to include an additional section here: Upgrading
+(For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
 
 ### Beginning with icsurvey
 

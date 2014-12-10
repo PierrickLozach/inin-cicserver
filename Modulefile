@@ -1,4 +1,4 @@
-name    'inin-cicserver'
+name    'cicserver'
 version '0.1.0'
 source  'https://github.com/PierrickI3/inin-cicserver'
 author  'Pierrick Lozach'
