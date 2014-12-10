@@ -66,7 +66,7 @@
 # === Examples
 #
 #  class {'cicserver::icsurvey':
-#	path 					=> 'c:/users/vagrant/desktop/newsurvey.icsurvey',
+#	path 					=> 'c:/i3/ic/manifest/newsurvey.icsurvey',
 # 	installnodomain			=> true,			
 # 	organizationname		=> 'organizationname',
 # 	locationname			=> 'locationname',
@@ -79,7 +79,7 @@
 # 	sipnic					=> 'Ethernet',
 # 	outboundaddress			=> '3178723000',
 # 	defaulticpassword		=> '1234',		
-# 	licensefile				=> "c:\\users\\vagrant\\desktop\\iclicense.i3lic",	
+# 	licensefile				=> "c:\\i3\\ic\\iclicense.i3lic",	
 # 	hostid					=> '6300270E26DF',
 #  }
 #
@@ -92,7 +92,7 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 class cicserver::icsurvey (
-	$path 					= 'c:/users/vagrant/desktop/NewSurvey.ICSurvey',
+	$path 					= 'c:/i3/ic/manifest/newsurvey.icsurvey',
 	$installnodomain 		= true,
 	$organizationname		= 'organizationname',
 	$locationname 			= 'locationname',
@@ -106,7 +106,7 @@ class cicserver::icsurvey (
 	$sipnic 				= 'Ethernet',
 	$outboundaddress 		= '3178723000',
 	$defaulticpassword 		= '1234',
-	$licensefile			= "c:\\users\\vagrant\\desktop\\iclicense.i3lic",
+	$licensefile			= "c:\\i3\\ic\\iclicense.i3lic",
 	$hostid,
 ){
 

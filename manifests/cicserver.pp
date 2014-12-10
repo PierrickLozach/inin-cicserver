@@ -76,7 +76,7 @@
 #   media                 => '\\\\servername\\path_to_installs_folder',
 #   username              => '',
 #   password              => '',
-#   survey                => 'c:/users/vagrant/desktop/newsurvey.icsurvey',
+#   survey                => 'c:/i3/ic/manifest/newsurvey.icsurvey',
 #   installnodomain       => true,      
 #   organizationname      => 'organizationname',
 #   locationname          => 'locationname',
@@ -90,7 +90,7 @@
 #   sipnic                => 'Ethernet',
 #   outboundaddress       => '3178723000',
 #   defaulticpassword     => '1234',    
-#   licensefile           => "c:\\users\\vagrant\\desktop\\iclicense.i3lic",  
+#   licensefile           => "c:\\i3\\ic\\iclicense.i3lic",  
 #   hostid                => '6300270E26DF',
 #  }
 #
@@ -245,7 +245,6 @@ class cicserver (
       # ===================================
 
       notice("Downloading Interaction Firmware")
-
       $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
       file { "${downloads}\\DownloadInteractionFirmware.ps1":
@@ -326,15 +325,21 @@ class cicserver (
       notice("Running Setup Assistant...")
 
       exec {'setupassistant-run':
-        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"-f=newsurvey.icsurvey\"",
-        path      => "c:\\users\\vagrant\\desktop",
-        cwd       => 'c:/windows/system32',
+        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"-f=${survey}\"", # TODO check command parameters (-f?)
+        path      => dirname('${survey}'),
+        cwd       => $::system32,
         provider  => windows,
         timeout   => 3600,
         require   => [
-          #Exec['generateciclicense-run'], # re-enable when the licensing service worka
+          #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
+          Icsurvey['icsurveyfile'],
         ],
+      }
+
+      file {'${survey}':
+        ensure  => absent,
+        require => Exec['setupassistant-run'],
       }
 
       # ==================
@@ -388,7 +393,7 @@ class cicserver (
       }
       
       notice("Setting web config login password")
-      registry_value { 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
+      registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type      => string,
         data      => 'CA1E4FED70D14679362C37DF14F7C88A',
         require   => [
@@ -408,8 +413,6 @@ class cicserver (
         ],
       }
       
-      notify {'Media server is now licensed.':}
-
       notice("Starting Media Server")
       service { 'ININMediaServer':
         ensure    => running,
@@ -509,8 +512,9 @@ class cicserver (
         ],
       }
       
-      # DO SOME CLEANUP
-      
+      # CLEANUP
+
+
     }
     uninstalled:
     {

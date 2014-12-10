@@ -52,7 +52,7 @@ class {'cicserver':
 
 ```puppet
 class {'cicserver::icsurvey':
-	path 					=> 'c:/users/vagrant/desktop/newsurvey.icsurvey',
+	path 					=> 'c:/i3/ic/manifest/newsurvey.icsurvey',
 	installnodomain			=> true,				# set to true if no domain
 	organizationname		=> 'organizationname',
 	locationname			=> 'locationname',
@@ -66,7 +66,7 @@ class {'cicserver::icsurvey':
 	sipnic					=> 'Ethernet 2',		# use the same name as shown in windows
 	outboundaddress			=> '3178723000',
 	defaulticpassword		=> '1234',				# only valid for users created by ic setup assistant
-	licensefile				=> "c:\\users\\vagrant\\desktop\\iclicense.i3lic",
+	licensefile				=> "c:\\i3\\ic\\iclicense.i3lic",
 	hostid					=> '6300270E26DF',
 }
 ```
