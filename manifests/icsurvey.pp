@@ -123,11 +123,7 @@ class cicserver::icsurvey (
 		$emailselected = 0
 	}
 
-	$useinstallnodomain = $installnodomain ? # got to find a better name for this
-	{
-		false 	=> 0,
-		true 	=> 1,
-	}
+	$useinstallnodomain = bool2num($installnodomain)
 
 	file { "icsurvey":
 			ensure 	=> present,
