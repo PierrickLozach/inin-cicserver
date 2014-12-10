@@ -127,11 +127,13 @@ class cicserver::install (
 )
 {
   $downloads = "C:\\Downloads"
+  
   if ($operatingsystem != 'Windows')
   {
     err("This module works on Windows only!")
     fail("Unsupported OS")
   }
+
   case $ensure
   {
     installed:
@@ -141,7 +143,7 @@ class cicserver::install (
       # ==================
 
       notice("Make sure .Net 3.5 is enabled")
-      dism { 'NetFx3':
+      dism {'NetFx3':
         ensure  => present,
         all     => true,
       }
@@ -189,7 +191,7 @@ class cicserver::install (
 
       notice("Downloading CIC Server")
       $cicserver_install = "ICServer_2015_R1.msi"
-      file { "${downloads}\\DownloadCICServer.ps1":
+      file {"${downloads}\\DownloadCICServer.ps1":
         ensure    => 'file',
         mode      => '0770',
         owner     => 'Vagrant',
@@ -217,7 +219,7 @@ class cicserver::install (
         before    => Exec['cicserver-install-download'],
       }
 
-      exec { "cicserver-install-download":
+      exec {"cicserver-install-download":
         command   => "${downloads}\\DownloadCICServer.ps1",
         creates   => "${downloads}\\${cicserver_install}",
         provider  => powershell,
@@ -247,7 +249,7 @@ class cicserver::install (
       notice("Downloading Interaction Firmware")
       $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
 
-      file { "${downloads}\\DownloadInteractionFirmware.ps1":
+      file {"${downloads}\\DownloadInteractionFirmware.ps1":
         ensure    => 'file',
         mode      => '0770',
         owner     => 'Vagrant',
@@ -275,7 +277,7 @@ class cicserver::install (
         before    => Exec['interactionfirmware-install-download'],
       }
 
-      exec { 'interactionfirmware-install-download':
+      exec {'interactionfirmware-install-download':
         command   => "${downloads}\\DownloadInteractionFirmware.ps1",
         creates   => "${downloads}\\${interactionfirmware_install}",
         provider  => powershell,
@@ -322,16 +324,14 @@ class cicserver::install (
         hostid                => $hostid,
       }
 
-      notice("Running Setup Assistant...")
-
-      # Run the complete IC Setup Assistant
+      # If it was run before, make sure the complete version of the IC Setup Assistant is being executed
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\Setup Assistant\Complete':
         type      => dword,
         data      => 0,
         before    => Exec['setupassistant-run'],
       }
 
-      # Go!
+      notice("Running Setup Assistant...")
       exec {'setupassistant-run':
         command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=${survey}\"", # TODO check command parameters (-f?)
         path      => dirname('${survey}'),
@@ -357,7 +357,7 @@ class cicserver::install (
       notice("Downloading Media Server")
       $mediaserver_install = 'MediaServer_2015_R1.msi'
 
-      file { "${downloads}\\DownloadMediaServer.ps1":
+      file {"${downloads}\\DownloadMediaServer.ps1":
         ensure    => 'file',
         mode      => '0770',
         owner     => 'Vagrant',
@@ -379,7 +379,7 @@ class cicserver::install (
         before    => Exec['mediaserver-install-download'],
       }
 
-      exec { 'mediaserver-install-download':
+      exec {'mediaserver-install-download':
         command   => "${downloads}\\DownloadMediaServer.ps1",
         creates   => "${downloads}\\${mediaserver_install}",
         provider  => powershell,
@@ -400,6 +400,10 @@ class cicserver::install (
         ],
       }
       
+      # ==============================
+      # -= Configuring Media Server =-
+      # ==============================
+
       notice("Setting web config login password")
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type      => string,
@@ -412,7 +416,7 @@ class cicserver::install (
       notice("Install Media Server license")
       #TODO GENERATE LICENSE FOR MEDIA SERVER
       
-      $mediaserver_licensefile = "C:\\Users\\Vagrant\\Desktop\\MediaServerLicense.i3lic"
+      $mediaserver_licensefile = "C:\\I3\\IC\\MediaServerLicense.i3lic"
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
         data      => $mediaserver_licensefile,
@@ -422,7 +426,7 @@ class cicserver::install (
       }
       
       notice("Starting Media Server")
-      service { 'ININMediaServer':
+      service {'ININMediaServer':
         ensure    => running,
         enable    => true,
         require   => [
@@ -436,7 +440,7 @@ class cicserver::install (
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
       $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=admin1&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
       
-      file { "mediaserver-pairing":
+      file {"mediaserver-pairing":
         ensure    => present,
         path      => "C:\\mediaserverpairing.ps1",
         content   => "
@@ -520,9 +524,6 @@ class cicserver::install (
         ],
       }
       
-      # CLEANUP
-
-
     }
     uninstalled:
     {
