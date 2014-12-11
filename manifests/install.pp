@@ -233,7 +233,7 @@ class cicserver::install (
       exec {"cicserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"", path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
-        cwd      => $::system32,
+        cwd      => $::path,
         provider => windows,
         timeout  => 1800,
         require  => [
@@ -292,7 +292,7 @@ class cicserver::install (
         command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
         path      => $::path,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
-        cwd       => $::system32,
+        cwd       => $::path,
         provider  => windows,
         timeout   => 1800,
         require   => [
@@ -335,7 +335,7 @@ class cicserver::install (
       notice("Running Setup Assistant...")
       exec {'setupassistant-run':
         command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=${survey}\"", # TODO check command parameters (-f?)
-        path      => dirname('${survey}'),
+        path      => $::path,
         cwd       => $::system32,
         provider  => windows,
         timeout   => 3600,
