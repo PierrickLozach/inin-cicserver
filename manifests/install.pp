@@ -345,11 +345,6 @@ class cicserver::install (
         ],
       }
 
-      file {'${survey}':
-        ensure  => absent,
-        require => Exec['setupassistant-run'],
-      }
-
       # ==================
       # -= Media Server =-
       # ==================
@@ -420,19 +415,15 @@ class cicserver::install (
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
         data      => $mediaserver_licensefile,
-        require   => [
-          Exec['mediaserver-install-run'],
-        ],
+        require   => Exec['mediaserver-install-run'],
+        before    => Service['ININMediaServer'],
       }
       
       notice("Starting Media Server")
       service {'ININMediaServer':
         ensure    => running,
         enable    => true,
-        require   => [
-          Exec['mediaserver-install-run'],
-          Notify['Media server is now licensed.'],
-        ],
+        require   => Exec['mediaserver-install-run'],
       }
       
       notice("Pairing CIC and Media server")

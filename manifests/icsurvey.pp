@@ -125,7 +125,7 @@ class cicserver::icsurvey (
 
 	$useinstallnodomain = bool2num($installnodomain)
 
-	file { "icsurvey":
+	file {'icsurvey':
 			ensure 	=> present,
 	        path    => $path,
 	        mode    => '0777',
