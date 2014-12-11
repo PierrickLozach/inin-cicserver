@@ -79,7 +79,7 @@
 # 	sipnic					=> 'Ethernet',
 # 	outboundaddress			=> '3178723000',
 # 	defaulticpassword		=> '1234',		
-# 	licensefile				=> "c:\\i3\\ic\\iclicense.i3lic",	
+# 	licensefile				=> "c:\\i3\\ic\\license.i3lic",	
 # 	hostid					=> '6300270E26DF',
 #  }
 #
@@ -125,7 +125,7 @@ class cicserver::icsurvey (
 
 	$useinstallnodomain = bool2num($installnodomain)
 
-	file { "icsurvey":
+	file {'icsurvey':
 			ensure 	=> present,
 	        path    => $path,
 	        mode    => '0777',
