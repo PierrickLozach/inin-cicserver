@@ -306,7 +306,7 @@ class cicserver::install (
       # =====================
 
       notice("Creating ICSurvey file...")
-      icsurvey {'icsurveyfile':
+      class {'icsurvey':
         path                  => $survey, # TODO Probably needs to move/generate this somewhere else
         installnodomain       => $installnodomain,
         organizationname      => $organizationname,
@@ -322,6 +322,7 @@ class cicserver::install (
         defaulticpassword     => $defaulticpassword,    
         licensefile           => $licensefile,  
         hostid                => $hostid,
+        before                => Exec['setupassistant-run'],
       }
 
       # If it was run before, make sure the complete version of the IC Setup Assistant is being executed
@@ -341,7 +342,6 @@ class cicserver::install (
         require   => [
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
-          Icsurvey['icsurveyfile'],
         ],
       }
 
