@@ -126,8 +126,11 @@ class cicserver::install (
   $hostid,
 )
 {
-  $downloads = "C:\\Downloads"
-  
+  $downloads                    = "C:\\Downloads"
+  $cicserver_install            = "ICServer_2015_R1.msi" # TODO add wildcards to filenames?
+  $interactionfirmware_install  = 'InteractionFirmware_2015_R1.msi'
+  $mediaserver_install          = 'MediaServer_2015_R1.msi'
+
   if ($operatingsystem != 'Windows')
   {
     err("This module works on Windows only!")
@@ -156,33 +159,15 @@ class cicserver::install (
       # -= CIC License =-
       # =================
       /*
-      notice("Getting Host Id...")
-      file {'C:\\gethostid.ahk':
-        ensure    => file,
-        content   => template('cicserver/gethostid.ahk.erb'),
-      }
       
       exec {"gethostid-run":
-        command => "psexec -h -accepteula \"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\" C:\\gethostid.ahk",
+        command => "<PATH TO MODULE>/files/licensing/GetHostIDU/gethostid_clu.exe | select -index 2 | % {$_ -replace '\\s',''}",
         path    => $::path,
-        require => File["C:/gethostid.ahk"],
+        provider  => powershell,
       }
 
       notice("Generating CIC License...")
-      file {'C:\\generateciclicense.ahk':
-        ensure  => file,
-        require => Exec['gethostid-run'],
-        content => template('cicserver/generateciclicense.ahk.erb'),
-      }
-
-      exec {"generateciclicense-run":
-        command => "psexec -h -accepteula \"C:\\Program Files\\AutoHotKey\\AutoHotKey.exe\" C:\\generateciclicense.ahk",
-        path    => $::path,
-        require => [
-          Exec['gethostid-run'],
-          File["C:/generateciclicense.ahk"],
-        ],
-      }
+      
       */
 
       # =========================
@@ -190,7 +175,6 @@ class cicserver::install (
       # =========================
 
       notice("Downloading CIC Server")
-      $cicserver_install = "ICServer_2015_R1.msi"
       file {"${downloads}\\DownloadCICServer.ps1":
         ensure    => 'file',
         mode      => '0770',
@@ -247,8 +231,6 @@ class cicserver::install (
       # ===================================
 
       notice("Downloading Interaction Firmware")
-      $interactionfirmware_install = 'InteractionFirmware_2015_R1.msi'
-
       file {"${downloads}\\DownloadInteractionFirmware.ps1":
         ensure    => 'file',
         mode      => '0770',
@@ -350,13 +332,17 @@ class cicserver::install (
         require => Exec['setupassistant-run'],
       }
 
+      service {'Interaction Center':
+        ensure  => running,
+        enable  => true,
+        require => Exec['setupassistant-run'],
+      }
+
       # ==================
       # -= Media Server =-
       # ==================
 
       notice("Downloading Media Server")
-      $mediaserver_install = 'MediaServer_2015_R1.msi'
-
       file {"${downloads}\\DownloadMediaServer.ps1":
         ensure    => 'file',
         mode      => '0770',
