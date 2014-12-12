@@ -327,7 +327,6 @@ class cicserver::install (
         ],
       }
 
-<<<<<<< HEAD
       file {'${survey}':
         ensure  => absent,
         require => Exec['setupassistant-run'],
@@ -339,8 +338,6 @@ class cicserver::install (
         require => Exec['setupassistant-run'],
       }
 
-=======
->>>>>>> aeb4c7f5f6c6001027c6bd66b3bfa5910df26013
       # ==================
       # -= Media Server =-
       # ==================
