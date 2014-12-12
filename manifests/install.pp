@@ -316,7 +316,7 @@ class cicserver::install (
 
       notice("Running Setup Assistant...")
       exec {'setupassistant-run':
-        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=${survey}\"", # TODO check command parameters (-f?)
+        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=$survey\"", # TODO check command parameters (-f?)
         path      => $::path,
         cwd       => $::system32,
         provider  => windows,
@@ -325,11 +325,6 @@ class cicserver::install (
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
         ],
-      }
-
-      file {'${survey}':
-        ensure  => absent,
-        require => Exec['setupassistant-run'],
       }
 
       service {'Interaction Center':
