@@ -90,7 +90,7 @@
 #   sipnic                => 'Ethernet',
 #   outboundaddress       => '3178723000',
 #   defaulticpassword     => '1234',    
-#   licensefile           => "c:\\i3\\ic\\iclicense.i3lic",  
+#   licensefile           => "c:\\i3\\ic\\license.i3lic",  
 #   hostid                => '6300270E26DF',
 #  }
 #
@@ -217,7 +217,7 @@ class cicserver::install (
       exec {"cicserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"", path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
-        cwd      => "${downloads}",
+        cwd      => $::path,
         provider => windows,
         timeout  => 1800,
         require  => [
@@ -274,7 +274,7 @@ class cicserver::install (
         command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
         path      => $::path,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
-        cwd       => "${downloads}",
+        cwd       => $::path,
         provider  => windows,
         timeout   => 1800,
         require   => [
@@ -288,7 +288,7 @@ class cicserver::install (
       # =====================
 
       notice("Creating ICSurvey file...")
-      icsurvey {'icsurveyfile':
+      class {'icsurvey':
         path                  => $survey, # TODO Probably needs to move/generate this somewhere else
         installnodomain       => $installnodomain,
         organizationname      => $organizationname,
@@ -304,6 +304,7 @@ class cicserver::install (
         defaulticpassword     => $defaulticpassword,    
         licensefile           => $licensefile,  
         hostid                => $hostid,
+        before                => Exec['setupassistant-run'],
       }
 
       # If it was run before, make sure the complete version of the IC Setup Assistant is being executed
@@ -316,17 +317,17 @@ class cicserver::install (
       notice("Running Setup Assistant...")
       exec {'setupassistant-run':
         command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=${survey}\"", # TODO check command parameters (-f?)
-        path      => dirname('${survey}'),
+        path      => $::path,
         cwd       => $::system32,
         provider  => windows,
         timeout   => 3600,
         require   => [
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
-          Icsurvey['icsurveyfile'],
         ],
       }
 
+<<<<<<< HEAD
       file {'${survey}':
         ensure  => absent,
         require => Exec['setupassistant-run'],
@@ -338,6 +339,8 @@ class cicserver::install (
         require => Exec['setupassistant-run'],
       }
 
+=======
+>>>>>>> aeb4c7f5f6c6001027c6bd66b3bfa5910df26013
       # ==================
       # -= Media Server =-
       # ==================
@@ -378,7 +381,7 @@ class cicserver::install (
         command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
         path      => $::path,
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
-        cwd       => "${downloads}",
+        cwd       => $::system32,
         provider  => windows,
         timeout   => 1800,
         require   => [
@@ -406,19 +409,15 @@ class cicserver::install (
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
         data      => $mediaserver_licensefile,
-        require   => [
-          Exec['mediaserver-install-run'],
-        ],
+        require   => Exec['mediaserver-install-run'],
+        before    => Service['ININMediaServer'],
       }
       
       notice("Starting Media Server")
       service {'ININMediaServer':
         ensure    => running,
         enable    => true,
-        require   => [
-          Exec['mediaserver-install-run'],
-          Notify['Media server is now licensed.'],
-        ],
+        require   => Exec['mediaserver-install-run'],
       }
       
       notice("Pairing CIC and Media server")
