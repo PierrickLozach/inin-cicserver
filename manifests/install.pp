@@ -321,6 +321,7 @@ class cicserver::install (
         cwd       => $::system32,
         provider  => windows,
         timeout   => 3600,
+        returns   => [0,1],
         require   => [
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
