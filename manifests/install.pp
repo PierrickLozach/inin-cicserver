@@ -360,7 +360,7 @@ class cicserver::install (
                         \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
                     
                         New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                        Copy-Item ININ:\\Installs\\ServerComponents\\${mediaserver_install} ${downloads}
+                        Copy-Item ININ:\\Installs\\Off-ServerComponents\\${mediaserver_install} ${downloads}
                         Remove-PSDrive ININ
                       }",
         require   => File["${downloads}"],
