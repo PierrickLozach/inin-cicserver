@@ -433,7 +433,7 @@ class cicserver::install (
         path      => "C:\\mediaserverpairing.ps1",
         content   => "
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
-        \$uri = New-Object System.Uri (${mediaserver_registrationurl})
+        \$uri = New-Object System.Uri (\"${mediaserver_registrationurl}\")
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
         \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", \$secpasswd)
         
@@ -444,7 +444,7 @@ class cicserver::install (
         for(\$provisionCount = 0; \$provisionCount -lt 15; \$provisionCount++)
         {
             try { 
-                \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body ${mediaserver_registrationnewdata}
+                \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body \"${mediaserver_registrationnewdata}\"
                 
             } catch {
                 \$x =  \$_.Exception.Message
