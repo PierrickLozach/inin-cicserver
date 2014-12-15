@@ -383,6 +383,7 @@ class cicserver::install (
         timeout   => 1800,
         require   => [
           Exec['mediaserver-install-download'],
+          Exec['setupassistant-run'],
         ],
       }
       
