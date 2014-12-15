@@ -380,6 +380,7 @@ class cicserver::install (
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd       => $::system32,
         provider  => windows,
+        returns   => [0,3010],
         timeout   => 1800,
         require   => [
           Exec['mediaserver-install-download'],
