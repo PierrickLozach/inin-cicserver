@@ -1,6 +1,6 @@
 class {'cicserver::install':
 	ensure              	=> installed,
-	media					=> "\\\\192.168.0.22\\ININ\\2015_R1\\CIC_2015_R1",
+	media					=> "\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1",
 	username              	=> 'admin',
 	password              	=> 'Vero052408',
 	survey                	=> 'c:/i3/ic/manifest/newsurvey.icsurvey',

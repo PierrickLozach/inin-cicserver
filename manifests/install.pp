@@ -321,21 +321,16 @@ class cicserver::install (
 
       notice("Running Setup Assistant...")
       exec {'setupassistant-run':
-        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=${survey}\"", # TODO check command parameters (-f?)
+        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=$survey\"", # TODO check command parameters (-f?)
         path      => $::path,
         cwd       => $::system32,
         provider  => windows,
         timeout   => 3600,
+        returns   => [0,1],
         require   => [
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
         ],
-      }
-
-<<<<<<< HEAD
-      file {'${survey}':
-        ensure  => absent,
-        require => Exec['setupassistant-run'],
       }
 
       service {'Interaction Center':
@@ -344,8 +339,6 @@ class cicserver::install (
         require => Exec['setupassistant-run'],
       }
 
-=======
->>>>>>> aeb4c7f5f6c6001027c6bd66b3bfa5910df26013
       # ==================
       # -= Media Server =-
       # ==================
@@ -356,20 +349,26 @@ class cicserver::install (
         mode      => '0770',
         owner     => 'Vagrant',
         group     => 'Administrators',
-        content   => "\$webClient = New-Object System.Net.webclient
-                      \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
-                      \$destPath = '${downloads}\\${mediaserver_install}'
-                      
-                      # Check to see if the file has been downloaded before, download the file only if it does not exist
-                      if ((Test-path \$destPath) -eq \$true) {
-                        'File Exists'
+        content   => "\$destPath = '${downloads}\\${mediaserver_install}'
+                        
+                      if ((Test-path \$destPath) -eq \$true) 
+                      {
+                        \$destPath + ' already exists'
                       }
-                      else {
-                        if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
-                          \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
-                        }
-                        \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                      else 
+                      {
+                        if (Test-Path ININ:)
+                        {
+                          Remove-PSDrive ININ
+                        }    
+                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
+                    
+                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                        Copy-Item ININ:\\Installs\\Off-ServerComponents\\${mediaserver_install} ${downloads}
+                        Remove-PSDrive ININ
                       }",
+        require   => File["${downloads}"],
         before    => Exec['mediaserver-install-download'],
       }
 
@@ -377,8 +376,6 @@ class cicserver::install (
         command   => "${downloads}\\DownloadMediaServer.ps1",
         creates   => "${downloads}\\${mediaserver_install}",
         provider  => powershell,
-        before    => Exec['mediaserver-install-run'],
-        require   => Exec['setupassistant-run'],
       }
 
       notice("Installing Media Server")
@@ -388,9 +385,11 @@ class cicserver::install (
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd       => $::system32,
         provider  => windows,
+        returns   => [0,3010],
         timeout   => 1800,
         require   => [
           Exec['mediaserver-install-download'],
+          Exec['setupassistant-run'],
         ],
       }
       
@@ -427,17 +426,16 @@ class cicserver::install (
       notice("Pairing CIC and Media server")
       $server = $::hostname
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
-      $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=admin1&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
+      $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
       
       file {"mediaserver-pairing":
         ensure    => present,
         path      => "C:\\mediaserverpairing.ps1",
         content   => "
-        
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
-        \$uri = New-Object System.Uri (\$url)
+        \$uri = New-Object System.Uri (${mediaserver_registrationurl})
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
-        \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", $secpasswd)
+        \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", \$secpasswd)
         
         \$mediaserverPath = \"c:\\i3\\ic\\resources\\MediaServerConfig.xml\"
         \$commandServerCount = 0
@@ -446,7 +444,7 @@ class cicserver::install (
         for(\$provisionCount = 0; \$provisionCount -lt 15; \$provisionCount++)
         {
             try { 
-                \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body \$newServerData
+                \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body ${mediaserver_registrationnewdata}
                 
             } catch {
                 \$x =  \$_.Exception.Message
@@ -484,11 +482,11 @@ class cicserver::install (
           Set-ItemProperty -path \"Registry::\$certPath\" -name Status -value Allowed
         }
         
-        \$certs = Get-ChildItem -Path \"hklm:\\Software\\Wow6432Node\\Interactive Intelligence\\EIC\\Directory Services\\Root\\CustomerSite\\Production\\Config Certificates\\Config Subsystems Certificates\"
+        \$certs = Get-ChildItem -Path \"hklm:\\Software\\Wow6432Node\\Interactive Intelligence\\EIC\\Directory Services\\Root\\${sitename}\\Production\\Config Certificates\\Config Subsystems Certificates\"
         ApproveCertificate \$certs[0].name
         ApproveCertificate \$certs[1].name
         write-host \"Certificate approval done\"
-        
+
         function CreateShortcut(\$AppLocation, \$description){
             \$WshShell = New-Object -ComObject WScript.Shell
             \$Shortcut = \$WshShell.CreateShortcut(\"\$env:USERPROFILE\\Desktop\\\$description.url\")
