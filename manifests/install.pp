@@ -422,17 +422,16 @@ class cicserver::install (
       notice("Pairing CIC and Media server")
       $server = $::hostname
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
-      $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=admin1&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
+      $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
       
       file {"mediaserver-pairing":
         ensure    => present,
         path      => "C:\\mediaserverpairing.ps1",
         content   => "
-        
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
-        \$uri = New-Object System.Uri (\$url)
+        \$uri = New-Object System.Uri (${mediaserver_registrationurl})
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
-        \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", $secpasswd)
+        \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", \$secpasswd)
         
         \$mediaserverPath = \"c:\\i3\\ic\\resources\\MediaServerConfig.xml\"
         \$commandServerCount = 0
@@ -441,7 +440,7 @@ class cicserver::install (
         for(\$provisionCount = 0; \$provisionCount -lt 15; \$provisionCount++)
         {
             try { 
-                \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body \$newServerData
+                \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body ${mediaserver_registrationnewdata}
                 
             } catch {
                 \$x =  \$_.Exception.Message
