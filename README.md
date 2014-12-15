@@ -83,6 +83,7 @@ class {'cicserver::icsurvey':
 	outboundaddress			=> '3178723000',
 	defaulticpassword		=> '1234',				# only valid for users created by ic setup assistant
 	licensefile				=> "c:\\i3\\ic\\iclicense.i3lic",
+	mediaserverlicensefile 	=> "c:\\i3\\ic\\mediaserverlicense.i3lic",
 	hostid					=> '6300270E26DF',
 }
 ```

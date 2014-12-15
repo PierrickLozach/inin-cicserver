@@ -55,6 +55,9 @@
 # [licensefile]
 #   Path to the .i3lic file
 #
+# [mediaserverlicensefile]
+#   Path to the media server license file (.i3lic)
+#
 # [hostid]
 #   Host id to use with the license file
 #
@@ -72,26 +75,27 @@
 # === Examples
 #
 #  class {'cicserver::install':
-#   ensure                => installed,
-#   media                 => '\\\\servername\\path_to_installs_folder',
-#   username              => '',
-#   password              => '',
-#   survey                => 'c:/i3/ic/manifest/newsurvey.icsurvey',
-#   installnodomain       => true,      
-#   organizationname      => 'organizationname',
-#   locationname          => 'locationname',
-#   sitename              => 'sitename',
-#   dbreporttype          => 'db',     
-#   dbservertype          => 'mssql', 
-#   dbtablename           => 'I3_IC',
-#   dialplanlocalareacode => '317',     
-#   emailfbmc             => true,
-#   recordingspath        => "C:\\I3\\IC\\Recordings",
-#   sipnic                => 'Ethernet',
-#   outboundaddress       => '3178723000',
-#   defaulticpassword     => '1234',    
-#   licensefile           => "c:\\i3\\ic\\license.i3lic",  
-#   hostid                => '6300270E26DF',
+#   ensure                  => installed,
+#   media                   => '\\\\servername\\path_to_installs_folder',
+#   username                => '',
+#   password                => '',
+#   survey                  => 'c:/i3/ic/manifest/newsurvey.icsurvey',
+#   installnodomain         => true,      
+#   organizationname        => 'organizationname',
+#   locationname            => 'locationname',
+#   sitename                => 'sitename',
+#   dbreporttype            => 'db',     
+#   dbservertype            => 'mssql', 
+#   dbtablename             => 'I3_IC',
+#   dialplanlocalareacode   => '317',     
+#   emailfbmc               => true,
+#   recordingspath          => "C:\\I3\\IC\\Recordings",
+#   sipnic                  => 'Ethernet',
+#   outboundaddress         => '3178723000',
+#   defaulticpassword       => '1234',    
+#   licensefile             => "c:\\i3\\ic\\license.i3lic",
+#   mediaserverlicensefile  => "c:\\i3\\ic\\mediaserverlicense.i3lic",
+#   hostid                  => '6300270E26DF',
 #  }
 #
 # === Authors
@@ -123,6 +127,7 @@ class cicserver::install (
   $outboundaddress,
   $defaulticpassword,
   $licensefile,
+  $mediaserverlicensefile,
   $hostid,
 )
 {
@@ -405,10 +410,9 @@ class cicserver::install (
       notice("Install Media Server license")
       #TODO GENERATE LICENSE FOR MEDIA SERVER
       
-      $mediaserver_licensefile = "C:\\I3\\IC\\MediaServerLicense.i3lic"
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
-        data      => $mediaserver_licensefile,
+        data      => $mediaserverlicensefile,
         require   => Exec['mediaserver-install-run'],
         before    => Service['ININMediaServer'],
       }
