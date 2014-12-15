@@ -344,20 +344,26 @@ class cicserver::install (
         mode      => '0770',
         owner     => 'Vagrant',
         group     => 'Administrators',
-        content   => "\$webClient = New-Object System.Net.webclient
-                      \$sourceURL = '${media}\\Installs\\Off-ServerComponents\\${mediaserver_install}'
-                      \$destPath = '${downloads}\\${mediaserver_install}'
-                      
-                      # Check to see if the file has been downloaded before, download the file only if it does not exist
-                      if ((Test-path \$destPath) -eq \$true) {
-                        'File Exists'
+        content   => "\$destPath = '${downloads}\\${mediaserver_install}'
+                        
+                      if ((Test-path \$destPath) -eq \$true) 
+                      {
+                        \$destPath + ' already exists'
                       }
-                      else {
-                        if ('${username}'.length -gt 0 -and '${password}'.length -gt 0) {
-                          \$webClient.Credentials = New-Object System.Net.NetworkCredential('${username}','${password}')
-                        }
-                        \$webClient.DownloadFile(\$sourceURL, \$destPath)
+                      else 
+                      {
+                        if (Test-Path ININ:)
+                        {
+                          Remove-PSDrive ININ
+                        }    
+                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
+                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
+                    
+                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
+                        Copy-Item ININ:\\Installs\\ServerComponents\\${mediaserver_install} ${downloads}
+                        Remove-PSDrive ININ
                       }",
+        require   => File["${downloads}"],
         before    => Exec['mediaserver-install-download'],
       }
 
@@ -365,8 +371,6 @@ class cicserver::install (
         command   => "${downloads}\\DownloadMediaServer.ps1",
         creates   => "${downloads}\\${mediaserver_install}",
         provider  => powershell,
-        before    => Exec['mediaserver-install-run'],
-        require   => Exec['setupassistant-run'],
       }
 
       notice("Installing Media Server")
