@@ -478,11 +478,11 @@ class cicserver::install (
           Set-ItemProperty -path \"Registry::\$certPath\" -name Status -value Allowed
         }
         
-        \$certs = Get-ChildItem -Path \"hklm:\\Software\\Wow6432Node\\Interactive Intelligence\\EIC\\Directory Services\\Root\\CustomerSite\\Production\\Config Certificates\\Config Subsystems Certificates\"
+        \$certs = Get-ChildItem -Path \"hklm:\\Software\\Wow6432Node\\Interactive Intelligence\\EIC\\Directory Services\\Root\\${sitename}\\Production\\Config Certificates\\Config Subsystems Certificates\"
         ApproveCertificate \$certs[0].name
         ApproveCertificate \$certs[1].name
         write-host \"Certificate approval done\"
-        
+
         function CreateShortcut(\$AppLocation, \$description){
             \$WshShell = New-Object -ComObject WScript.Shell
             \$Shortcut = \$WshShell.CreateShortcut(\"\$env:USERPROFILE\\Desktop\\\$description.url\")
