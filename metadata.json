@@ -1,10 +1,10 @@
 {
-  "name": "pierrick-icsurvey",
+  "name": "inin-cicserver",
   "version": "0.1.0",
   "author": "pierrick",
-  "summary": "creates a CIC survey",
+  "summary": "Installs CIC server and required software",
   "license": "Apache 2.0",
-  "source": "https://gihub.com/PierrickI3/pierrick-icsurvey",
+  "source": "https://gihub.com/PierrickI3/inin-cicserver",
   "project_page": null,
   "issues_url": null,
   "dependencies": [
@@ -16,7 +16,7 @@
     {
       "operatingsystem":"Windows"
     },
-  ],
+  ]
 
 }
 
