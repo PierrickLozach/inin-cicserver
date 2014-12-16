@@ -11,6 +11,12 @@
     {"name":"puppetlabs/stdlib","version_requirement":">= 4.4.0"},
     {"name":"puppetlabs/powershell","version_requirement":">= 1.0.4"},
     {"name":"puppetlabs/registry","version_requirement":">= 1.0.3"},
-  ]
+  ],
+  "operatingsystem_support":[
+    {
+      "operatingsystem":"Windows"
+    },
+  ],
+
 }
 
