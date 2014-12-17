@@ -167,7 +167,8 @@ class cicserver::install (
       
       exec {"gethostid-run":
         command => "<PATH TO MODULE>/files/licensing/GetHostIDU/gethostid_clu.exe | select -index 2 | % {$_ -replace '\\s',''}",
-        path    => $::path,
+        path      => $::path,
+        cwd       => $::system32,
         provider  => powershell,
       }
 
@@ -222,7 +223,8 @@ class cicserver::install (
       exec {"cicserver-install-run":
         command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"", path => $::path,
         creates  => "C:/I3/IC/Server/NotifierU.exe",
-        cwd      => $::path,
+        path      => $::path,
+        cwd       => $::system32,
         provider => windows,
         timeout  => 1800,
         require  => [
@@ -278,8 +280,8 @@ class cicserver::install (
       exec {"interactionfirmware-install-run":
         command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
         path      => $::path,
+        cwd       => $::system32,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
-        cwd       => $::path,
         provider  => windows,
         timeout   => 1800,
         require   => [
@@ -383,8 +385,8 @@ class cicserver::install (
       exec {"mediaserver-install-run":
         command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
         path      => $::path,
-        creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         cwd       => $::system32,
+        creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
         provider  => windows,
         returns   => [0,3010],
         timeout   => 1800,
