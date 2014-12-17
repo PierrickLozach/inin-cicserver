@@ -8,11 +8,13 @@ def key_exists?(path_reg)
 end
 
 def readkey(path_reg,value)
-  begin
-    mykey = Win32::Registry.open(Win32::Registry::HKEY_LOCAL_MACHINE,path_reg,Win32::Registry::Constants::KEY_READ | 0x100)
-    return mykey[value]
-  rescue
-    return ''
+  Win32::Registry::HKEY_LOCAL_MACHINE.open(path_reg,Win32::Registry::Constants::KEY_READ | 0x100) do |reg|
+    begin
+      regkey = reg[value]
+      return true
+    rescue
+      return false
+    end
   end
 end
 
@@ -20,7 +22,7 @@ Facter.add(:cic_icws_licensed) do
   confine :osfamily => "Windows"
   setcode do
     require 'win32/registry'
-    cic_site_name = readkey('SOFTWARE\Wow6432Node\Interactive Intelligence\Directory Services\Root', 'SITE')
-    cic_icws_licensed = key_exists?('SOFTWARE\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root' + cic_site_name + '\Production\Licenses\I3_FEATURE_ICWS_SDK')
+    cic_site_name = readkey('SOFTWARE\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root', 'SITE')
+    cic_icws_licensed = key_exists?('SOFTWARE\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root' + cic_site_name[0] + '\Production\Licenses\I3_FEATURE_ICWS_SDK')
   end
 end
