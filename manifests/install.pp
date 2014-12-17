@@ -317,6 +317,7 @@ class cicserver::install (
         type      => dword,
         data      => 0,
         before    => Exec['setupassistant-run'],
+        require   => Exec['cicserver-install-run'],
       }
 
       notice("Running Setup Assistant...")
