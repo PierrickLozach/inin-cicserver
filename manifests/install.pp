@@ -225,7 +225,7 @@ class cicserver::install (
         creates  => "C:/I3/IC/Server/NotifierU.exe",
         cwd       => $::system32,
         provider => windows,
-        timeout  => 1800,
+        timeout  => 3600,
         require  => [
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
