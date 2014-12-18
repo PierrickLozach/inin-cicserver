@@ -95,6 +95,7 @@
 #   defaulticpassword       => '1234',    
 #   licensefile             => "c:\\i3\\ic\\license.i3lic",
 #   mediaserverlicensefile  => "c:\\i3\\ic\\mediaserverlicense.i3lic",
+#   loggedonuserpassword    => 'vagrant',
 #   hostid                  => '6300270E26DF',
 #  }
 #
@@ -128,6 +129,7 @@ class cicserver::install (
   $defaulticpassword,
   $licensefile,
   $mediaserverlicensefile,
+  $loggedonuserpassword,
   $hostid,
 )
 {
