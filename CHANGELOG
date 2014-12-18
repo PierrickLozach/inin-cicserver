@@ -2,3 +2,5 @@
 2014-12-01: Changing name to cicserver
 2014-12-09: Adding ICSurvey class
 2014-12-17: Fixing cicserver-install-run path
+2014-12-17: Fixed cic_icws_installed custom fact & minor fixes
+2014-12-18: Adding missing loggedonuserpassword parameter
