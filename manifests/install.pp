@@ -223,12 +223,14 @@ class cicserver::install (
 
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command  => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qb! /norestart\"", path => $::path,
-        creates  => "C:/I3/IC/Server/NotifierU.exe",
+        command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"", 
+        path      => $::path,
+        creates   => "C:/I3/IC/Server/NotifierU.exe",
         cwd       => $::system32,
-        provider => windows,
-        timeout  => 3600,
-        require  => [
+        provider  => windows,
+        timeout   => 2000, # 15 minutes should be enough but you never know
+        returns   => [0,6],
+        require   => [
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
