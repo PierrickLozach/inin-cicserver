@@ -223,11 +223,11 @@ class cicserver::install (
 
       notice("Installing CIC Server")
       exec {"cicserver-install-run":
-        command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"", 
+        command   => "msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart", 
         path      => $::path,
         creates   => "C:/I3/IC/Server/NotifierU.exe",
         cwd       => $::system32,
-        provider  => windows,
+        provider  => powershell,
         timeout   => 2000, # 15 minutes should be enough but you never know
         returns   => [0,6],
         require   => [
@@ -281,11 +281,11 @@ class cicserver::install (
       
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart\"",
+        command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart,
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
-        provider  => windows,
+        provider  => powershell,
         timeout   => 1800,
         require   => [
           Exec['cicserver-install-run'],
@@ -327,10 +327,10 @@ class cicserver::install (
 
       notice("Running Setup Assistant...")
       exec {'setupassistant-run':
-        command   => "psexec -h -accepteula c:\\i3\\ic\\server\\icsetupu.exe \"/f=$survey\"", # TODO check command parameters (-f?)
+        command   => "c:\\i3\\ic\\server\\icsetupu.exe \"/f=$survey\"",
         path      => $::path,
         cwd       => $::system32,
-        provider  => windows,
+        provider  => powershell,
         timeout   => 3600,
         returns   => [0,1],
         require   => [
@@ -386,11 +386,11 @@ class cicserver::install (
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
-        command   => "psexec -h -accepteula cmd.exe /c \"msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart\"",
+        command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart,
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
-        provider  => windows,
+        provider  => powershell,
         returns   => [0,3010],
         timeout   => 1800,
         require   => [
