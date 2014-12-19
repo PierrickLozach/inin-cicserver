@@ -1,1 +1,0 @@
-LicGenClient.exe -hostid A3155D1E8B32 -hostname computername -version 4 -fulllic 1000
