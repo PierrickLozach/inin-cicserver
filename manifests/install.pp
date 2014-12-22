@@ -281,7 +281,7 @@ class cicserver::install (
       
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart,
+        command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
@@ -386,7 +386,7 @@ class cicserver::install (
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
-        command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart,
+        command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
