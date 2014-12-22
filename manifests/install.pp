@@ -228,7 +228,7 @@ class cicserver::install (
         creates   => "C:/I3/IC/Server/NotifierU.exe",
         cwd       => $::system32,
         provider  => powershell,
-        timeout   => 2000, # 15 minutes should be enough but you never know
+        timeout   => 3600, # 15 minutes should be enough but could take longer on slower machines
         returns   => [0,6],
         require   => [
           Exec['cicserver-install-download'],
@@ -315,15 +315,16 @@ class cicserver::install (
         licensefile           => $licensefile,  
         hostid                => $hostid,
         before                => Exec['setupassistant-run'],
+        require               => Exec['cicserver-install-run'],
       }
 
       # If it was run before, make sure the complete version of the IC Setup Assistant is being executed
-      registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\Setup Assistant\Complete':
-        type      => dword,
-        data      => 0,
-        before    => Exec['setupassistant-run'],
-        require   => Exec['cicserver-install-run'],
-      }
+      #registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\Setup Assistant\Complete':
+      #  type      => dword,
+      #  data      => 0,
+      #  before    => Exec['setupassistant-run'],
+      #  require   => Exec['cicserver-install-run'],
+      #}
 
       notice("Running Setup Assistant...")
       exec {'setupassistant-run':
