@@ -6,3 +6,4 @@
 2014-12-18: Adding missing loggedonuserpassword parameter
 2014-12-19: Finetuning ic server install parameters
 2014-12-19: Removing unnecessary files
+2014-12-22: Using powershell instead of psexec
