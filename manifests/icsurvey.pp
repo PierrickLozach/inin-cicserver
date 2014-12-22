@@ -92,7 +92,7 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 class cicserver::icsurvey (
-	$path 					= 'c:/i3/ic/manifest/newsurvey.icsurvey',
+	$path 					= "C:\\I3\\IC\\Manifest\\newsurvey.icsurvey",
 	$installnodomain 		= true,
 	$organizationname		= 'organizationname',
 	$locationname 			= 'locationname',
@@ -102,11 +102,11 @@ class cicserver::icsurvey (
 	$dbtablename 			= 'I3_IC',
 	$dialplanlocalareacode 	= '317',
 	$emailfbmc 				= false,
-	$recordingspath 		= "c:\\I3\\IC\\Recordings",
+	$recordingspath 		= "C:\\I3\\IC\\Recordings",
 	$sipnic 				= 'Ethernet',
 	$outboundaddress 		= '3178723000',
 	$defaulticpassword 		= '1234',
-	$licensefile			= "c:\\i3\\ic\\iclicense.i3lic",
+	$licensefile			= "C:\\I3\\IC\\iclicense.i3lic",
 	$hostid,
 ){
 
@@ -125,11 +125,18 @@ class cicserver::icsurvey (
 
 	$useinstallnodomain = bool2num($installnodomain)
 
+	file {'icsurveyfolder':
+		ensure		=> present,
+		path 		=> dirname("${path}"),
+		provider	=> windows,
+	}
+
 	file {'icsurvey':
-			ensure 	=> present,
-	        path    => $path,
-	        mode    => '0777',
-	        content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
-	      }
+		ensure 	=> present,
+        path    => $path,
+        mode    => '0777',
+        content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
+        require => File['icsurveyfolder'],
+    }
 
 }
