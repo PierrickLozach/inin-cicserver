@@ -253,7 +253,7 @@ class cicserver::install (
                       write-host \"When complete, you should not see any error in the console\"  -foregroundcolor cyan
 
                       Write-Host \"Installing CIC\"
-                      Invoke-Expression \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn! /norestart\"
+                      Invoke-Expression \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"
                       WaitForMsiToFinish",
         require   => [
           File['${downloads}'],
