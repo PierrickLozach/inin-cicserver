@@ -125,9 +125,11 @@ class cicserver::icsurvey (
 
 	$useinstallnodomain = bool2num($installnodomain)
 
-	file {'icsurveyfolder':
-		ensure		=> directory,
-		path 		=> dirname("${path}"),
+	$manifest_dir = ["C:\\I3", "C:\\I3\\IC", "C:\\I3\\IC\\Manifest",]
+
+	file {$manifest_dir:
+		ensure	=> directory,
+        mode    => '0777',
 	}
 
 	file {'icsurvey':
