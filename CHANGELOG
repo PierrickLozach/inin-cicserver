@@ -8,3 +8,4 @@
 2014-12-19: Removing unnecessary files
 2014-12-22: Using powershell instead of psexec
 2014-12-22: Added ICServer dependency to Setup Assistant
+2014-12-23: Fixed survey directory creation
