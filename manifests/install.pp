@@ -222,18 +222,51 @@ class cicserver::install (
       # ========================
 
       notice("Installing CIC Server")
-      exec {"cicserver-install-run":
-        command   => "Start-Process -Wait -Passthru -FilePath \"msiexec.exe\" -ArgumentList \"/i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD=\"${loggedonuserpassword}\" INTERACTIVEINTELLIGENCE=\"C:\\I3\\IC\" TRACING_LOGS=\"C:\\I3\\IC\\Logs\" STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"", 
-        path      => $::path,
-        creates   => "C:/I3/IC/Server/NotifierU.exe",
-        cwd       => $::system32,
-        provider  => powershell,
-        timeout   => 3600, # 15 minutes should be enough but could take longer on slower machines
-        returns   => [0,6],
+      file {"${downloads}\\InstallCICServer.ps1":
+        ensure    => 'file',
+        mode      => '0770',
+        owner     => 'Vagrant',
+        group     => 'Administrators',
+        content   => "function WaitForMsiToFinish
+                      {
+                          \$fullInstall = \$false
+                          [System.Console]::Write(\"Waiting for install to finish...\")
+                          do{
+                              sleep 10
+                              \$procCount = @(Get-Process | ? { \$_.ProcessName -eq \"msiexec\" }).Count
+
+                              if(\$procCount -gt 1){
+                                \$fullInstall = \$true
+                              }
+
+                              \$isDone = \$fullInstall -and (\$procCount -le 1)
+                          }while (\$isDone -ne \$true)
+
+                          sleep 5
+                          #this is a hack.  msiexec doesn't full exit, so we need to kill it.
+                          Stop-Process -processname msiexec -erroraction 'silentlycontinue' -Force
+
+                          Write-Host \"DONE\" -foreground \"green\"
+                      }
+
+                      Write-Host \"This install and setup process can take a long time, please do not interrupt the process\"  -foregroundcolor cyan
+                      write-host \"When complete, you should not see any error in the console\"  -foregroundcolor cyan
+
+                      Write-Host \"Installing CIC\"
+                      Invoke-Expression \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn! /norestart\"
+                      WaitForMsiToFinish",
         require   => [
+          File['${downloads}'],
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
+      }
+
+      exec {"cicserver-install-run":
+        command   => "${downloads}\\InstallCICServer.ps1",
+        creates   => "C:/I3/IC/Server/NotifierU.exe",
+        provider  => powershell,
+        timeout   => 3600, # 15 minutes should be enough but could take longer on slower machines
       }
       
       # ===================================
