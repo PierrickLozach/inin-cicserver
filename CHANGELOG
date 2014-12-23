@@ -9,3 +9,4 @@
 2014-12-22: Using powershell instead of psexec
 2014-12-22: Added ICServer dependency to Setup Assistant
 2014-12-23: Fixed survey directory creation
+2014-12-23: Using Start-Process to wait for msiexec to finish for CIC server install
