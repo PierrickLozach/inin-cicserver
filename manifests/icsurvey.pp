@@ -126,9 +126,8 @@ class cicserver::icsurvey (
 	$useinstallnodomain = bool2num($installnodomain)
 
 	file {'icsurveyfolder':
-		ensure		=> present,
+		ensure		=> directory,
 		path 		=> dirname("${path}"),
-		provider	=> windows,
 	}
 
 	file {'icsurvey':
@@ -136,7 +135,6 @@ class cicserver::icsurvey (
         path    => $path,
         mode    => '0777',
         content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
-        require => File['icsurveyfolder'],
     }
 
 }
