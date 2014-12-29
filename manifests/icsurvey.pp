@@ -8,7 +8,7 @@
 #	Required. Full path to the output icsurvey file.
 #
 # [installnodomain]
-# 	Set to trure if no domain is configured.
+# 	Set to true if no domain is configured.
 #
 # [organizationname]
 # 	Interaction Center Organization Name. Defaults to organizationname.
@@ -129,13 +129,11 @@ class cicserver::icsurvey (
 
 	file {$manifest_dir:
 		ensure	=> directory,
-        mode    => '0777',
 	}
 
 	file {'icsurvey':
 		ensure 	=> present,
         path    => $path,
-        mode    => '0777',
         content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
     }
 
