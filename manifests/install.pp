@@ -185,7 +185,6 @@ class cicserver::install (
       notice("Downloading CIC Server")
       file {"${downloads}\\DownloadCICServer.ps1":
         ensure    => 'file',
-        mode      => '0770',
         owner     => 'Vagrant',
         group     => 'Administrators',
         content   => "\$destPath = '${downloads}\\${cicserver_install}'
@@ -224,13 +223,20 @@ class cicserver::install (
       notice("Installing CIC Server")
       file {"${downloads}\\InstallCICServer.ps1":
         ensure    => 'file',
-        mode      => '0770',
         owner     => 'Vagrant',
         group     => 'Administrators',
-        content   => "function WaitForMsiToFinish
+        content   => "\$LogFile=\"C:\\Downloads\\icinstalllog.txt\"
+
+                      function LogWrite
+                      {
+                        Param ([string]\$logstring)
+                        Add-content \$LogFile -value \$logstring
+                      }
+                      function WaitForMsiToFinish
                       {
                           \$fullInstall = \$false
-                          [System.Console]::Write(\"Waiting for install to finish...\")
+                          echo 'Waiting for install to finish...'
+                          LogWrite 'Waiting for install to finish...'
                           do{
                               sleep 10
                               \$procCount = @(Get-Process | ? { \$_.ProcessName -eq \"msiexec\" }).Count
@@ -239,14 +245,18 @@ class cicserver::install (
                                 \$fullInstall = \$true
                               }
 
+                              LogWrite 'ProcCount: ' \$procCount
+
                               \$isDone = \$fullInstall -and (\$procCount -le 1)
                           }while (\$isDone -ne \$true)
 
+                          LogWrite 'Before sleep'
                           sleep 5
                           #this is a hack.  msiexec doesn't full exit, so we need to kill it.
                           Stop-Process -processname msiexec -erroraction 'silentlycontinue' -Force
 
                           Write-Host \"DONE\" -foreground \"green\"
+                          LogWrite 'DONE'
                       }
 
                       Write-Host \"This install and setup process can take a long time, please do not interrupt the process\"  -foregroundcolor cyan
@@ -256,7 +266,7 @@ class cicserver::install (
                       Invoke-Expression \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"
                       WaitForMsiToFinish",
         require   => [
-          File['${downloads}'],
+          File["${downloads}"],
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
@@ -266,7 +276,8 @@ class cicserver::install (
         command   => "${downloads}\\InstallCICServer.ps1",
         creates   => "C:/I3/IC/Server/NotifierU.exe",
         provider  => powershell,
-        timeout   => 3600, # 15 minutes should be enough but could take longer on slower machines
+        logoutput => true,
+        timeout   => 1800,
       }
       
       # ===================================
@@ -276,7 +287,6 @@ class cicserver::install (
       notice("Downloading Interaction Firmware")
       file {"${downloads}\\DownloadInteractionFirmware.ps1":
         ensure    => 'file',
-        mode      => '0770',
         owner     => 'Vagrant',
         group     => 'Administrators',
         content   => "\$destPath = '${downloads}\\${interactionfirmware_install}'
@@ -314,7 +324,7 @@ class cicserver::install (
       
       notice("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qb! /norestart",
+        command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
@@ -331,7 +341,7 @@ class cicserver::install (
       # =====================
 
       notice("Creating ICSurvey file...")
-      class {'icsurvey':
+      class {'cicserver::icsurvey':
         path                  => $survey, # TODO Probably needs to move/generate this somewhere else
         installnodomain       => $installnodomain,
         organizationname      => $organizationname,
@@ -351,22 +361,34 @@ class cicserver::install (
         require               => Exec['cicserver-install-run'],
       }
 
-      # If it was run before, make sure the complete version of the IC Setup Assistant is being executed
-      #registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\Setup Assistant\Complete':
-      #  type      => dword,
-      #  data      => 0,
-      #  before    => Exec['setupassistant-run'],
-      #  require   => Exec['cicserver-install-run'],
-      #}
-
       notice("Running Setup Assistant...")
+      file {"${downloads}\\RunSetupAssistant.ps1":
+        ensure => 'file',
+        owner => 'Vagrant',
+        group => 'Administrators',
+        content => "
+        function WaitForSetupAssistantToFinish
+        {
+          echo 'Waiting for Setup Assistant to finish...'
+          LogWrite 'Waiting for Setup Assistant to finish...'
+          do
+          {
+            sleep 10
+            \$sacomplete = Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete
+            LogWrite 'Setup Assistant Complete? ' \$sacomplete
+          }while (\$sacomplete -eq 0)
+        }
+        
+        Write-Host \"Setup Assistant is currently running and will take a while to complete. Please wait...\"
+        Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe \"/f=$survey\"
+        ",
+      }
+
       exec {'setupassistant-run':
-        command   => "c:\\i3\\ic\\server\\icsetupu.exe \"/f=$survey\"",
-        path      => $::path,
-        cwd       => $::system32,
+        command   => "${downloads}\\RunSetupAssistant.ps1",
+        unless    => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}",
         provider  => powershell,
         timeout   => 3600,
-        returns   => [0,1],
         require   => [
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
@@ -386,7 +408,6 @@ class cicserver::install (
       notice("Downloading Media Server")
       file {"${downloads}\\DownloadMediaServer.ps1":
         ensure    => 'file',
-        mode      => '0770',
         owner     => 'Vagrant',
         group     => 'Administrators',
         content   => "\$destPath = '${downloads}\\${mediaserver_install}'
@@ -420,7 +441,7 @@ class cicserver::install (
 
       notice("Installing Media Server")
       exec {"mediaserver-install-run":
-        command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qb! /norestart",
+        command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qn /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
