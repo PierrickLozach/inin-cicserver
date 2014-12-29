@@ -245,7 +245,8 @@ class cicserver::install (
                                 \$fullInstall = \$true
                               }
 
-                              LogWrite 'ProcCount: ' \$procCount
+                              LogWrite 'ProcCount: ' 
+                              LogWrite \$procCount
 
                               \$isDone = \$fullInstall -and (\$procCount -le 1)
                           }while (\$isDone -ne \$true)
@@ -367,20 +368,31 @@ class cicserver::install (
         owner => 'Vagrant',
         group => 'Administrators',
         content => "
+        \$LogFile=\"C:\\Downloads\\salog.txt\"
+
+        function LogWrite
+        {
+          Param ([string]\$logstring)
+          Add-content \$LogFile -value \$logstring
+        }
+
         function WaitForSetupAssistantToFinish
         {
-          echo 'Waiting for Setup Assistant to finish...'
+          Write-Host 'Waiting for Setup Assistant to finish...'
           LogWrite 'Waiting for Setup Assistant to finish...'
           do
           {
             sleep 10
             \$sacomplete = Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete
-            LogWrite 'Setup Assistant Complete? ' \$sacomplete
+            LogWrite 'Setup Assistant Complete? ' 
+            LogWrite \$sacomplete
           }while (\$sacomplete -eq 0)
         }
         
-        Write-Host \"Setup Assistant is currently running and will take a while to complete. Please wait...\"
-        Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe \"/f=$survey\"
+        Write-Host \"Starting Setup Assistant... this will take a while to complete. Please wait...\"
+        LogWrite 'Starting setup assistant...'
+        Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
+        WaitForSetupAssistantToFinish
         ",
       }
 
