@@ -359,14 +359,13 @@ class cicserver::install (
         licensefile           => $licensefile,  
         hostid                => $hostid,
         before                => Exec['setupassistant-run'],
-        require               => Exec['cicserver-install-run'],
       }
 
       notice("Running Setup Assistant...")
       file {"${downloads}\\RunSetupAssistant.ps1":
-        ensure => 'file',
-        owner => 'Vagrant',
-        group => 'Administrators',
+        ensure  => 'file',
+        owner   => 'Vagrant',
+        group   => 'Administrators',
         content => "
         \$LogFile=\"C:\\Downloads\\salog.txt\"
 
@@ -398,12 +397,14 @@ class cicserver::install (
 
       exec {'setupassistant-run':
         command   => "${downloads}\\RunSetupAssistant.ps1",
-        unless    => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}",
+        onlyif    => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}",
         provider  => powershell,
         timeout   => 3600,
         require   => [
           #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
+          File["${downloads}\\RunSetupAssistant.ps1"],
+          Class['cicserver::icsurvey'],
         ],
       }
 
