@@ -20,4 +20,5 @@ class {'cicserver::install':
 	licensefile           	=> "c:\\i3\\ic\\license.i3lic",
 	mediaserverlicensefile 	=> "c:\\i3\\ic\\mediaserverlicense.i3lic",  
 	hostid                	=> '6300270E26DF',
+	loggedonuserpassword	=> 'vagrant',
 }
