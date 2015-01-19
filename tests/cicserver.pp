@@ -1,8 +1,8 @@
 class {'cicserver::install':
 	ensure              	=> installed,
-	media					=> "\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1",
-	username              	=> 'admin',
-	password              	=> 'Vero052408',
+	source					=> "\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1",
+	source_user            	=> 'admin',
+	source_password        	=> 'Vero052408',
 	survey                	=> 'c:/i3/ic/manifest/newsurvey.icsurvey',
 	installnodomain       	=> true,      
 	organizationname      	=> 'organizationname',

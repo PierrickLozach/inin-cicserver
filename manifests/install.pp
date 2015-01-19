@@ -7,14 +7,14 @@
 # [ensure]
 #   installed. No other values are currently supported.
 #
-# [media]
+# [source]
 #   location of the ININ MSI files. Should contain the Installs directory.
 #
-# [username]
-#   Optional. Username to access the media share specified previously.
+# [source_user]
+#   Optional. Username to access the source specified previously.
 #
-# [password]
-#   Optional. Password to access the media share specified previously.
+# [source_password]
+#   Optional. Password to access the source specified previously.
 #
 # [organization]
 #   Interaction Center Organization Name.
@@ -76,9 +76,9 @@
 #
 #  class {'cicserver::install':
 #   ensure                  => installed,
-#   media                   => '\\\\servername\\path_to_installs_folder',
-#   username                => '',
-#   password                => '',
+#   source                  => '\\\\servername\\path_to_installs_folder',
+#   source_user             => '',
+#   source_password         => '',
 #   survey                  => 'c:/i3/ic/manifest/newsurvey.icsurvey',
 #   installnodomain         => true,      
 #   organizationname        => 'organizationname',
@@ -176,7 +176,7 @@ class cicserver::install (
       # =========================
 
       debug("Downloading CIC Server")
-      download_file("${cicserver_install}", "${source}", "${cache_dir}")
+      download_file("${cicserver_install}", "${source}\\Installs\\ServerComponents", "${cache_dir}", "${source_user}", "${source_password}")
 
       # ========================
       # -= Install CIC Server -=
@@ -248,7 +248,7 @@ class cicserver::install (
       # ===================================
 
       debug("Downloading Interaction Firmware")
-      download_file("${interactionfirmware_install}", "${source}", "${cache_dir}")
+      download_file("${interactionfirmware_install}", "${source}\\Installs\\ServerComponents", "${cache_dir}", "${source_user}", "${source_password}")
 
       # ===================================
       # -= Install Interaction Firmware -=
@@ -350,7 +350,7 @@ class cicserver::install (
       # ===========================
 
       debug("Downloading Media Server")
-      download_file("${mediaserver_install}", "${source}", "${cache_dir}")
+      download_file("${mediaserver_install}", "${source}\\Installs\\Off-ServerComponents", "${cache_dir}", "${source_user}", "${source_password}")
 
       # ==========================
       # -= Install Media Server =-
