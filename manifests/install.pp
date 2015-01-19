@@ -110,9 +110,9 @@
 
 class cicserver::install (
   $ensure = installed,
-  $media,
-  $username,
-  $password,
+  $source,
+  $source_user,
+  $source_password,
   $survey,
   $installnodomain,
   $organizationname,
@@ -144,6 +144,15 @@ class cicserver::install (
     fail("Unsupported OS")
   }
 
+  $cache_dir = hiera('core::cache_dir', 'c:/windows/temp')
+  if (!defined(File["${cache_dir}"]))
+  {
+    file {"${cache_dir}":
+      ensure   => directory,
+      provider => windows,
+    }
+  }
+
   case $ensure
   {
     installed:
@@ -152,7 +161,7 @@ class cicserver::install (
       # -= Requirements -=
       # ==================
 
-      notice("Make sure .Net 3.5 is enabled")
+      debug("Make sure .Net 3.5 is enabled")
       dism {'NetFx3':
         ensure  => present,
         all     => true,
@@ -162,65 +171,18 @@ class cicserver::install (
         ensure  => directory,
       }
 
-      # =================
-      # -= CIC License =-
-      # =================
-      /*
-      
-      exec {"gethostid-run":
-        command => "<PATH TO MODULE>/files/licensing/GetHostIDU/gethostid_clu.exe | select -index 2 | % {$_ -replace '\\s',''}",
-        path      => $::path,
-        cwd       => $::system32,
-        provider  => powershell,
-      }
-
-      notice("Generating CIC License...")
-      
-      */
-
       # =========================
       # -= Download CIC Server -=
       # =========================
 
-      notice("Downloading CIC Server")
-      file {"${downloads}\\DownloadCICServer.ps1":
-        ensure    => 'file',
-        owner     => 'Vagrant',
-        group     => 'Administrators',
-        content   => "\$destPath = '${downloads}\\${cicserver_install}'
-                        
-                      if ((Test-path \$destPath) -eq \$true) 
-                      {
-                        \$destPath + ' already exists'
-                      }
-                      else 
-                      {
-                        if (Test-Path ININ:)
-                        {
-                          Remove-PSDrive ININ
-                        }    
-                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
-                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
-                    
-                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                        Copy-Item ININ:\\Installs\\ServerComponents\\${cicserver_install} ${downloads}
-                        Remove-PSDrive ININ
-                      }",
-        require   => File["${downloads}"],
-        before    => Exec['cicserver-install-download'],
-      }
-
-      exec {"cicserver-install-download":
-        command   => "${downloads}\\DownloadCICServer.ps1",
-        creates   => "${downloads}\\${cicserver_install}",
-        provider  => powershell,
-      }
+      debug("Downloading CIC Server")
+      download_file("${cicserver_install}", "${source}", "${cache_dir}")
 
       # ========================
       # -= Install CIC Server -=
       # ========================
 
-      notice("Installing CIC Server")
+      debug("Installing CIC Server")
       file {"${downloads}\\InstallCICServer.ps1":
         ensure    => 'file',
         owner     => 'Vagrant',
@@ -285,45 +247,14 @@ class cicserver::install (
       # -= Download Interaction Firmware -=
       # ===================================
 
-      notice("Downloading Interaction Firmware")
-      file {"${downloads}\\DownloadInteractionFirmware.ps1":
-        ensure    => 'file',
-        owner     => 'Vagrant',
-        group     => 'Administrators',
-        content   => "\$destPath = '${downloads}\\${interactionfirmware_install}'
-                        
-                      if ((Test-path \$destPath) -eq \$true) 
-                      {
-                        \$destPath + ' already exists'
-                      }
-                      else 
-                      {
-                        if (Test-Path ININ:)
-                        {
-                          Remove-PSDrive ININ
-                        }    
-                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
-                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
-                    
-                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                        Copy-Item ININ:\\Installs\\ServerComponents\\${interactionfirmware_install} ${downloads}
-                        Remove-PSDrive ININ
-                      }",
-        require   => File["${downloads}"],
-        before    => Exec['interactionfirmware-install-download'],
-      }
-
-      exec {'interactionfirmware-install-download':
-        command   => "${downloads}\\DownloadInteractionFirmware.ps1",
-        creates   => "${downloads}\\${interactionfirmware_install}",
-        provider  => powershell,
-      }
+      debug("Downloading Interaction Firmware")
+      download_file("${interactionfirmware_install}", "${source}", "${cache_dir}")
 
       # ===================================
       # -= Install Interaction Firmware -=
       # ===================================
       
-      notice("Installing Interaction Firmware")
+      debug("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
         command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
         path      => $::path,
@@ -341,7 +272,7 @@ class cicserver::install (
       # -= Setup Assistant =-
       # =====================
 
-      notice("Creating ICSurvey file...")
+      debug("Creating ICSurvey file...")
       class {'cicserver::icsurvey':
         path                  => $survey, # TODO Probably needs to move/generate this somewhere else
         installnodomain       => $installnodomain,
@@ -361,7 +292,7 @@ class cicserver::install (
         before                => Exec['setupassistant-run'],
       }
 
-      notice("Running Setup Assistant...")
+      debug("Running Setup Assistant...")
       file {"${downloads}\\RunSetupAssistant.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
@@ -392,67 +323,40 @@ class cicserver::install (
         LogWrite 'Starting setup assistant...'
         Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
         WaitForSetupAssistantToFinish
+
+        \$cicservice = Get-Service \"Interaction Center\"
+        Start-Service \$cicservice
+        \$cicservice.WaitForStatus('Running')
         ",
       }
 
       exec {'setupassistant-run':
         command   => "${downloads}\\RunSetupAssistant.ps1",
-        onlyif    => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}",
+        onlyif    => [
+          "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
+          "if ((Get-ItemProperty ($licensefile) -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
+          ],
         provider  => powershell,
         timeout   => 3600,
         require   => [
-          #Exec['generateciclicense-run'], # re-enable when the licensing service works
           Exec['interactionfirmware-install-run'],
           File["${downloads}\\RunSetupAssistant.ps1"],
           Class['cicserver::icsurvey'],
         ],
       }
 
-      service {'Interaction Center':
-        ensure  => running,
-        enable  => true,
-        require => Exec['setupassistant-run'],
-      }
+      # ===========================
+      # -= Download Media Server =-
+      # ===========================
 
-      # ==================
-      # -= Media Server =-
-      # ==================
+      debug("Downloading Media Server")
+      download_file("${mediaserver_install}", "${source}", "${cache_dir}")
 
-      notice("Downloading Media Server")
-      file {"${downloads}\\DownloadMediaServer.ps1":
-        ensure    => 'file',
-        owner     => 'Vagrant',
-        group     => 'Administrators',
-        content   => "\$destPath = '${downloads}\\${mediaserver_install}'
-                        
-                      if ((Test-path \$destPath) -eq \$true) 
-                      {
-                        \$destPath + ' already exists'
-                      }
-                      else 
-                      {
-                        if (Test-Path ININ:)
-                        {
-                          Remove-PSDrive ININ
-                        }    
-                        \$password = '${password}' | ConvertTo-SecureString -asPlainText -Force
-                        \$credentials = New-Object System.Management.Automation.PSCredential('${username}',\$password)
-                    
-                        New-PSDrive -name ININ -Psprovider FileSystem -root '${media}' -credential \$credentials
-                        Copy-Item ININ:\\Installs\\Off-ServerComponents\\${mediaserver_install} ${downloads}
-                        Remove-PSDrive ININ
-                      }",
-        require   => File["${downloads}"],
-        before    => Exec['mediaserver-install-download'],
-      }
+      # ==========================
+      # -= Install Media Server =-
+      # ==========================
 
-      exec {'mediaserver-install-download':
-        command   => "${downloads}\\DownloadMediaServer.ps1",
-        creates   => "${downloads}\\${mediaserver_install}",
-        provider  => powershell,
-      }
-
-      notice("Installing Media Server")
+      debug("Installing Media Server")
       exec {"mediaserver-install-run":
         command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qn /norestart",
         path      => $::path,
@@ -471,7 +375,8 @@ class cicserver::install (
       # -= Configuring Media Server =-
       # ==============================
 
-      notice("Setting web config login password")
+      #TODO Check if registry key exists? Or that installation has occurred succesfully before writing to registry
+      debug("Setting web config login password")
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type      => string,
         data      => 'CA1E4FED70D14679362C37DF14F7C88A',
@@ -480,7 +385,7 @@ class cicserver::install (
         ],
       }
       
-      notice("Install Media Server license")
+      debug("Install Media Server license")
       #TODO GENERATE LICENSE FOR MEDIA SERVER
       
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
@@ -490,14 +395,14 @@ class cicserver::install (
         before    => Service['ININMediaServer'],
       }
       
-      notice("Starting Media Server")
+      debug("Starting Media Server")
       service {'ININMediaServer':
         ensure    => running,
         enable    => true,
         require   => Exec['mediaserver-install-run'],
       }
       
-      notice("Pairing CIC and Media server")
+      debug("Pairing CIC and Media server")
       $server = $::hostname
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
       $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
@@ -588,7 +493,7 @@ class cicserver::install (
     }
     uninstalled:
     {
-      notice('Uninstalling CIC server')
+      debug('Uninstalling CIC server')
     }
     default:
     {

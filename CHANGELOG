@@ -11,3 +11,6 @@
 2014-12-23: Fixed survey directory creation
 2014-12-23: Using Start-Process to wait for msiexec to finish for CIC server install
 2014-12-23: Using powershell script to install CIC server
+2014-01-03: Replaced unless option by onlyif when running setup assistant
+2015-01-15: No need to start the Interaction Center service after running setup assistant
+2015-01-19: Changed how copies work. Now supports UNC paths and URLs
