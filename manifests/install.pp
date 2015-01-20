@@ -225,7 +225,6 @@ class cicserver::install (
                       WaitForMsiToFinish",
         require   => [
           File["${cache_dir}"],
-          Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
       }
@@ -259,7 +258,6 @@ class cicserver::install (
         timeout   => 1800,
         require   => [
           Exec['cicserver-install-run'],
-          Exec['interactionfirmware-install-download'],
         ],
       }
 
@@ -361,7 +359,6 @@ class cicserver::install (
         returns   => [0,3010],
         timeout   => 1800,
         require   => [
-          Exec['mediaserver-install-download'],
           Exec['setupassistant-run'],
         ],
       }
