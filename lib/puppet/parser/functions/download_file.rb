@@ -14,6 +14,7 @@
 # UNC EXAMPLE: download_file("InteractionFirmware_2015_R1.msi", "\\\\192.168.0.22\\Logiciels\\ININ\\2015R1\\CIC_2015_R1\\Installs\\ServerComponents", "C:\\Users\\Pierrick\\Desktop")
 # URL EXAMPLE: download_file("Brazilian%20Trance.wav-13722-Free-Loops.com.mp3","http://dight310.byu.edu/media/audio/FreeLoops.com/2/2","C:\\Windows\\Temp")
 #
+# TODO Find out which network drive is free?
 # TODO Need to support fallback path (default path)
 #
 
