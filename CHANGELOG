@@ -14,3 +14,4 @@
 2014-01-03: Replaced unless option by onlyif when running setup assistant
 2015-01-15: No need to start the Interaction Center service after running setup assistant
 2015-01-19: Changed how copies work. Now supports UNC paths and URLs
+2015-01-20: Using cache_dir all the way
