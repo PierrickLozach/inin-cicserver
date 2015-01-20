@@ -1,6 +1,6 @@
 # == Class: cicserver::install
 #
-# Installs CIC and other ININ products silently.
+# Installs CIC, Interaction Firmware and Media Server then pairs the Media server with the CIC server. All silently.
 #
 # === Parameters
 #
@@ -133,7 +133,6 @@ class cicserver::install (
   $hostid,
 )
 {
-  $downloads                    = "C:\\Downloads"
   $cicserver_install            = "ICServer_2015_R1.msi" # TODO add wildcards to filenames?
   $interactionfirmware_install  = 'InteractionFirmware_2015_R1.msi'
   $mediaserver_install          = 'MediaServer_2015_R1.msi'
@@ -167,10 +166,6 @@ class cicserver::install (
         all     => true,
       }
 
-      file {"${downloads}":
-        ensure  => directory,
-      }
-
       # =========================
       # -= Download CIC Server -=
       # =========================
@@ -183,11 +178,11 @@ class cicserver::install (
       # ========================
 
       debug("Installing CIC Server")
-      file {"${downloads}\\InstallCICServer.ps1":
+      file {"${cache_dir}\\InstallCICServer.ps1":
         ensure    => 'file',
         owner     => 'Vagrant',
         group     => 'Administrators',
-        content   => "\$LogFile=\"C:\\Downloads\\icinstalllog.txt\"
+        content   => "\$LogFile=\"${cache_dir}\\icinstalllog.txt\"
 
                       function LogWrite
                       {
@@ -226,17 +221,17 @@ class cicserver::install (
                       write-host \"When complete, you should not see any error in the console\"  -foregroundcolor cyan
 
                       Write-Host \"Installing CIC\"
-                      Invoke-Expression \"msiexec /i ${downloads}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"
+                      Invoke-Expression \"msiexec /i ${cache_dir}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"
                       WaitForMsiToFinish",
         require   => [
-          File["${downloads}"],
+          File["${cache_dir}"],
           Exec['cicserver-install-download'],
           Dism['NetFx3'],
         ],
       }
 
       exec {"cicserver-install-run":
-        command   => "${downloads}\\InstallCICServer.ps1",
+        command   => "${cache_dir}\\InstallCICServer.ps1",
         creates   => "C:/I3/IC/Server/NotifierU.exe",
         provider  => powershell,
         logoutput => true,
@@ -256,7 +251,7 @@ class cicserver::install (
       
       debug("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command   => "msiexec /i ${downloads}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
+        command   => "msiexec /i ${cache_dir}\\${interactionfirmware_install} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
@@ -293,12 +288,12 @@ class cicserver::install (
       }
 
       debug("Running Setup Assistant...")
-      file {"${downloads}\\RunSetupAssistant.ps1":
+      file {"${cache_dir}\\RunSetupAssistant.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
         group   => 'Administrators',
         content => "
-        \$LogFile=\"C:\\Downloads\\salog.txt\"
+        \$LogFile=\"${cache_dir}\\salog.txt\"
 
         function LogWrite
         {
@@ -331,7 +326,7 @@ class cicserver::install (
       }
 
       exec {'setupassistant-run':
-        command   => "${downloads}\\RunSetupAssistant.ps1",
+        command   => "${cache_dir}\\RunSetupAssistant.ps1",
         onlyif    => [
           "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
           "if ((Get-ItemProperty ($licensefile) -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
@@ -340,7 +335,7 @@ class cicserver::install (
         timeout   => 3600,
         require   => [
           Exec['interactionfirmware-install-run'],
-          File["${downloads}\\RunSetupAssistant.ps1"],
+          File["${cache_dir}\\RunSetupAssistant.ps1"],
           Class['cicserver::icsurvey'],
         ],
       }
@@ -358,7 +353,7 @@ class cicserver::install (
 
       debug("Installing Media Server")
       exec {"mediaserver-install-run":
-        command   => "msiexec /i ${downloads}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qn /norestart",
+        command   => "msiexec /i ${cache_dir}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qn /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
@@ -409,7 +404,7 @@ class cicserver::install (
       
       file {"mediaserver-pairing":
         ensure    => present,
-        path      => "C:\\mediaserverpairing.ps1",
+        path      => "${cache_dir}\\mediaserverpairing.ps1",
         content   => "
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
         \$uri = New-Object System.Uri (\"${mediaserver_registrationurl}\")
@@ -482,7 +477,7 @@ class cicserver::install (
       }
       
       exec {"mediaserver-pair-cic":
-        command   => "C:\\mediaserverpairing.ps1",
+        command   => "${cache_dir}\\mediaserverpairing.ps1",
         provider  => powershell,
         require   => [
           File['mediaserver-pairing'],
