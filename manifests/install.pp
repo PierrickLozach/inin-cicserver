@@ -224,7 +224,6 @@ class cicserver::install (
                       Invoke-Expression \"msiexec /i ${cache_dir}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"
                       WaitForMsiToFinish",
         require   => [
-          File["${cache_dir}"],
           Dism['NetFx3'],
         ],
       }
@@ -317,6 +316,8 @@ class cicserver::install (
         Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
         WaitForSetupAssistantToFinish
 
+        Start-Sleep -s 30
+
         \$cicservice = Get-Service \"Interaction Center\"
         Start-Service \$cicservice
         \$cicservice.WaitForStatus('Running')
@@ -327,7 +328,7 @@ class cicserver::install (
         command   => "${cache_dir}\\RunSetupAssistant.ps1",
         onlyif    => [
           "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
-          "if ((Get-ItemProperty ($licensefile) -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
+          "if ((Get-ItemProperty (\"${licensefile}\") -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
           ],
         provider  => powershell,
         timeout   => 3600,
