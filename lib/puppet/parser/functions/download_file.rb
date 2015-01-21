@@ -30,7 +30,7 @@ module Puppet::Parser::Functions
 
   	if (path.match("^\\\\.*"))
 
-  		# Path is an UNC path
+  		debug "Downloading from a UNC path"
 		net = WIN32OLE.new('WScript.Network')
 		if (args[3].empty?)
 			net.MapNetworkDrive('Z:', path)
@@ -41,22 +41,24 @@ module Puppet::Parser::Functions
 		end
 
 	  	FileUtils.cp_r("Z:\\" + filename, destination)
-
+	  	debug "Copy finished. Removing network drive"
 	  	net.RemoveNetworkDrive('Z:')
 
     elsif (path.match("^((https|http|ftp|ftps)?:\/\/)?"))
 
-		# Path is HTTP/HTTPS/FTP/FTPS
+    	debug "Downloading from an external path"
 		File.open(destination + "\\" + filename, 'wb') do |saved_file|
 		  open(path + "/" + filename, 'rb') do |read_file|
 		  	saved_file.write(read_file.read)
 		  end
 		end
+	  	debug "Copy finished."
 
 	else
 
-		# Local copy
+		debug "Downloading from a local copy"
 	  	FileUtils.cp_r(path + "\\" + filename, destination)
+	  	debug "Copy finished."
 
 	end
   end
