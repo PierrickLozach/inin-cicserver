@@ -143,7 +143,7 @@ class cicserver::install (
     fail("Unsupported OS")
   }
 
-  $cache_dir = hiera('core::cache_dir', 'c:/windows/temp')
+  $cache_dir = hiera('core::cache_dir', 'c:/users/vagrant/appdata/local/temp') # If I use c:/windows/temp then a circular dependency occurs when used with SQL
   if (!defined(File["${cache_dir}"]))
   {
     file {"${cache_dir}":
@@ -165,6 +165,9 @@ class cicserver::install (
         ensure  => present,
         all     => true,
       }
+
+/*
+      # NO NEED TO USE THIS AS CIC IS PRE-INSTALLED
 
       # =========================
       # -= Download CIC Server -=
@@ -235,7 +238,8 @@ class cicserver::install (
         logoutput => true,
         timeout   => 1800,
       }
-      
+*/
+
       # ===================================
       # -= Download Interaction Firmware -=
       # ===================================
