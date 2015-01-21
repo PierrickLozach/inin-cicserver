@@ -156,89 +156,6 @@ class cicserver::install (
   {
     installed:
     {
-      # ==================
-      # -= Requirements -=
-      # ==================
-
-      debug("Make sure .Net 3.5 is enabled")
-      dism {'NetFx3':
-        ensure  => present,
-        all     => true,
-      }
-
-/*
-      # NO NEED TO USE THIS AS CIC IS PRE-INSTALLED
-
-      # =========================
-      # -= Download CIC Server -=
-      # =========================
-
-      debug("Downloading CIC Server")
-      download_file("${cicserver_install}", "${source}\\Installs\\ServerComponents", "${cache_dir}", "${source_user}", "${source_password}")
-
-      # ========================
-      # -= Install CIC Server -=
-      # ========================
-
-      debug("Installing CIC Server")
-      file {"${cache_dir}\\InstallCICServer.ps1":
-        ensure    => 'file',
-        owner     => 'Vagrant',
-        group     => 'Administrators',
-        content   => "\$LogFile=\"${cache_dir}\\icinstalllog.txt\"
-
-                      function LogWrite
-                      {
-                        Param ([string]\$logstring)
-                        Add-content \$LogFile -value \$logstring
-                      }
-                      function WaitForMsiToFinish
-                      {
-                          \$fullInstall = \$false
-                          echo 'Waiting for install to finish...'
-                          LogWrite 'Waiting for install to finish...'
-                          do{
-                              sleep 10
-                              \$procCount = @(Get-Process | ? { \$_.ProcessName -eq \"msiexec\" }).Count
-
-                              if(\$procCount -gt 1){
-                                \$fullInstall = \$true
-                              }
-
-                              LogWrite 'ProcCount: ' 
-                              LogWrite \$procCount
-
-                              \$isDone = \$fullInstall -and (\$procCount -le 1)
-                          }while (\$isDone -ne \$true)
-
-                          LogWrite 'Before sleep'
-                          sleep 5
-                          #this is a hack.  msiexec doesn't full exit, so we need to kill it.
-                          Stop-Process -processname msiexec -erroraction 'silentlycontinue' -Force
-
-                          Write-Host \"DONE\" -foreground \"green\"
-                          LogWrite 'DONE'
-                      }
-
-                      Write-Host \"This install and setup process can take a long time, please do not interrupt the process\"  -foregroundcolor cyan
-                      write-host \"When complete, you should not see any error in the console\"  -foregroundcolor cyan
-
-                      Write-Host \"Installing CIC\"
-                      Invoke-Expression \"msiexec /i ${cache_dir}\\${cicserver_install} PROMPTEDPASSWORD='${loggedonuserpassword}' INTERACTIVEINTELLIGENCE='C:\\I3\\IC' TRACING_LOGS='C:\\I3\\IC\\Logs' STARTEDBYEXEORIUPDATE=1 CANCELBIG4COPY=1 OVERRIDEKBREQUIREMENT=1 REBOOT=ReallySuppress /l*v icserver.log /qn /norestart\"
-                      WaitForMsiToFinish",
-        require   => [
-          Dism['NetFx3'],
-        ],
-      }
-
-      exec {"cicserver-install-run":
-        command   => "${cache_dir}\\InstallCICServer.ps1",
-        creates   => "C:/I3/IC/Server/NotifierU.exe",
-        provider  => powershell,
-        logoutput => true,
-        timeout   => 1800,
-      }
-*/
 
       # ===================================
       # -= Download Interaction Firmware -=
@@ -259,9 +176,6 @@ class cicserver::install (
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
         provider  => powershell,
         timeout   => 1800,
-        require   => [
-          Exec['cicserver-install-run'],
-        ],
       }
 
       # =====================
@@ -483,7 +397,7 @@ class cicserver::install (
         provider  => powershell,
         require   => [
           File['mediaserver-pairing'],
-          Exec['cicserver-install-run'],
+          Exec['mediaserver-install-run'],
         ],
       }
       
