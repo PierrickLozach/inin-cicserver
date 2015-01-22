@@ -294,7 +294,7 @@ class cicserver::install (
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
         data      => $mediaserverlicensefile,
-        require   => Exec['mediaserver-install-run'],
+        require   => Package['mediaserver'],
         before    => Service['ININMediaServer'],
       }
       
