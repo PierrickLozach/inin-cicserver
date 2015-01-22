@@ -234,11 +234,9 @@ class cicserver::install (
         Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
         WaitForSetupAssistantToFinish
 
+        LogWrite 'Sleeping for 30 seconds while waiting for setup assistant to finish.'
         Start-Sleep -s 30
-
-        \$cicservice = Get-Service \"Interaction Center\"
-        Start-Service \$cicservice
-        \$cicservice.WaitForStatus('Running')
+        LogWrite 'Sleeping is done. Setup assistant is done.'
         ",
       }
 
