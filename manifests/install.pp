@@ -202,7 +202,7 @@ class cicserver::install (
         before                => Exec['setupassistant-run'],
       }
 
-      debug("Running Setup Assistant...")
+      debug("Creating Setup Assistant powershell script...")
       file {"${cache_dir}\\RunSetupAssistant.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
@@ -242,6 +242,7 @@ class cicserver::install (
         ",
       }
 
+      debug("Running setup assistant")
       exec {'setupassistant-run':
         command   => "${cache_dir}\\RunSetupAssistant.ps1",
         onlyif    => [
@@ -255,6 +256,13 @@ class cicserver::install (
           File["${cache_dir}\\RunSetupAssistant.ps1"],
           Class['cicserver::icsurvey'],
         ],
+      }
+
+      debug("Starting Interaction Center")
+      service {'cicserver-service-start':
+        name    => 'Interaction Center',
+        ensure  => running,
+        require => Exec['setupassistant-run'],
       }
 
       # ===========================
@@ -280,7 +288,6 @@ class cicserver::install (
       # -= Configuring Media Server =-
       # ==============================
 
-      #TODO Check if registry key exists? Or that installation has occurred succesfully before writing to registry
       debug("Setting web config login password")
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type      => string,
@@ -305,11 +312,11 @@ class cicserver::install (
         require   => Package['mediaserver'],
       }
       
-      debug("Pairing CIC and Media server")
       $server = $::hostname
       $mediaserver_registrationurl = "https://${server}/config/servers/add/postback"
       $mediaserver_registrationnewdata = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
       
+      debug("Creating script to pair CIC and Media server")
       file {"mediaserver-pairing":
         ensure    => present,
         path      => "${cache_dir}\\mediaserverpairing.ps1",
@@ -384,7 +391,8 @@ class cicserver::install (
         ],
       }
       
-      exec {"mediaserver-pair-cic":
+        debug("Pairing CIC and Media server")
+        exec {"mediaserver-pair-cic":
         command   => "${cache_dir}\\mediaserverpairing.ps1",
         provider  => powershell,
         require   => [
