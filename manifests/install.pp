@@ -234,8 +234,8 @@ class cicserver::install (
         Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
         WaitForSetupAssistantToFinish
 
-        LogWrite 'Sleeping for 30 seconds while waiting for setup assistant to finish.'
-        Start-Sleep -s 30
+        LogWrite 'Sleeping for 180 seconds while waiting for setup assistant to finish.'
+        Start-Sleep -s 180
         LogWrite 'Sleeping is done. Setup assistant is done.'
         ",
       }
@@ -261,6 +261,7 @@ class cicserver::install (
         name    => 'Interaction Center',
         ensure  => running,
         require => Exec['setupassistant-run'],
+        before  => Package['mediaserver'],
       }
 
       # ===========================
@@ -275,7 +276,7 @@ class cicserver::install (
       # ==========================
 
       debug("Installing Media Server")
-      package {"mediaserver":
+      package {'mediaserver':
         ensure          => installed,
         source          => "${cache_dir}\\${mediaserver_install}",
         install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
