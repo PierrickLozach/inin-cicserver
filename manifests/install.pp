@@ -269,19 +269,13 @@ class cicserver::install (
       # ==========================
 
       debug("Installing Media Server")
-      exec {"mediaserver-install-run":
-        command   => "msiexec /i ${cache_dir}\\${mediaserver_install} MEDIASERVER_ADMINPASSWORD_ENCRYPTED='CA1E4FED70D14679362C37DF14F7C88A' /l*v mediaserver.log /qn /norestart",
-        path      => $::path,
-        cwd       => $::system32,
-        creates   => "C:/I3/IC/Server/mediaprovider_w32r_2_0.dll",
-        provider  => powershell,
-        returns   => [0,3010],
-        timeout   => 1800,
-        require   => [
-          Exec['setupassistant-run'],
-        ],
+      package {"mediaserver":
+        ensure          => installed,
+        source          => "${cache_dir}\\${mediaserver_install}",
+        install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
+        require         => Exec['setupassistant-run'],
       }
-      
+
       # ==============================
       # -= Configuring Media Server =-
       # ==============================
@@ -291,9 +285,7 @@ class cicserver::install (
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type      => string,
         data      => 'CA1E4FED70D14679362C37DF14F7C88A',
-        require   => [
-          Exec['mediaserver-install-run'],
-        ],
+        require   => Package['mediaserver'],
       }
       
       debug("Install Media Server license")
@@ -310,7 +302,7 @@ class cicserver::install (
       service {'ININMediaServer':
         ensure    => running,
         enable    => true,
-        require   => Exec['mediaserver-install-run'],
+        require   => Package['mediaserver'],
       }
       
       debug("Pairing CIC and Media server")
@@ -397,7 +389,7 @@ class cicserver::install (
         provider  => powershell,
         require   => [
           File['mediaserver-pairing'],
-          Exec['mediaserver-install-run'],
+          Package['mediaserver'],
         ],
       }
       
