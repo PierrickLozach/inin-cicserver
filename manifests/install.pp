@@ -280,6 +280,7 @@ class cicserver::install (
         ensure          => installed,
         source          => "${cache_dir}\\${mediaserver_install}",
         install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
+        provider        => 'windows',
         require         => Exec['setupassistant-run'],
       }
 
