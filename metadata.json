@@ -1,6 +1,6 @@
 {
   "name": "PierrickL-cicserver",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "author": "pierrick",
   "summary": "Installs CIC server and required software",
   "license": "Apache 2.0",
