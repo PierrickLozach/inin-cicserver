@@ -294,14 +294,20 @@ class cicserver::install (
         data      => 'CA1E4FED70D14679362C37DF14F7C88A',
         require   => Package['mediaserver'],
       }
+
+      file { 'c:/i3/ic/mediaserverlicense.i3lic':
+        ensure => present,
+        source => $mediaserverlicensefile,
+      }
       
       debug("Install Media Server license")
-      #TODO GENERATE LICENSE FOR MEDIA SERVER
-      
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
-        data      => $mediaserverlicensefile,
-        require   => Package['mediaserver'],
+        data      => "C:\\I3\\IC\\MediaServerLicense.i3lic",
+        require   => [
+          Package['mediaserver'],
+          File['c:/i3/ic/mediaserverlicense.i3lic'],
+        ],
         before    => Service['ININMediaServer'],
       }
       
