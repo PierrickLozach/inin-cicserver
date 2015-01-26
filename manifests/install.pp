@@ -295,12 +295,13 @@ class cicserver::install (
         require   => Package['mediaserver'],
       }
 
+      # TODO Change filename based on number of CPU cores
       debug("Downloading Media Server License")
       download_file("mediaservertest_40_02cores_prod_vm.i3lic", "${source}\\Licenses\\MediaServer", "${cache_dir}", "${source_user}", "${source_password}")
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
         ensure => present,
-        source => '${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic',
+        source => 'file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic',
       }
       
       debug("Install Media Server license")
