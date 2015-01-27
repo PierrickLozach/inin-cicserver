@@ -300,8 +300,9 @@ class cicserver::install (
       download_file("mediaservertest_40_02cores_prod_vm.i3lic", "${source}\\Licenses\\MediaServer", "${cache_dir}", "${source_user}", "${source_password}")
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
-        ensure => present,
-        source => 'file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic',
+        ensure              => file,
+        source              => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
+        source_permissions  => ignore,
       }
       
       debug("Install Media Server license")
