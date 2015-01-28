@@ -18,3 +18,4 @@
 2015-01-22: Using package to install media server
 2015-01-23: removed mediaserverlicensefile parameter
 2015-01-27: Fixed media server license copy issue
+2015-01-28: Set Interaction Center service to automatic
