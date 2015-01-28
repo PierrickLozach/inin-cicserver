@@ -259,6 +259,7 @@ class cicserver::install (
       debug("Starting Interaction Center")
       service {'cicserver-service-start':
         ensure  => running,
+        enable  => true,
         name    => 'Interaction Center',
         require => Exec['setupassistant-run'],
         before  => Package['mediaserver'],
