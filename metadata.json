@@ -4,7 +4,7 @@
   "author": "pierrick",
   "summary": "Installs CIC server and required software",
   "license": "Apache 2.0",
-  "source": "https://gihub.com/PierrickI3/inin-cicserver",
+  "source": "https://github.com/PierrickI3/inin-cicserver",
   "project_page": null,
   "issues_url": null,
   "dependencies": [
