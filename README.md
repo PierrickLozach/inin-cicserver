@@ -61,8 +61,26 @@ for upgrading, you may wish to include an additional section here: Upgrading
 ## Usage
 
 ```puppet
-class {'cicserver':
-	ensure => installed,
+class { 'cicserver::install':
+    ensure                  => installed,
+    source                  => "\\\\server\\path",							# Path to MSIs
+    source_user             => "username",									# If required, username to access the location of MSIs
+    source_password         => "password",
+    survey                  => 'C:\\I3\\IC\\Manifest\\newsurvey.icsurvey',	# Where the survey should be generated (and later on, used by the IC Setup Assistant)
+    installnodomain         => true,
+    organizationname        => 'demoorg',
+    locationname            => 'demolocation',
+    sitename                => 'demosite',
+    dbreporttype            => 'db',
+    dbservertype            => 'mssql',
+    dbtablename             => 'I3_IC',
+    dialplanlocalareacode   => '317',
+    emailfbmc               => true,
+    recordingspath          => "C:\\I3\\IC\\Recordings",
+    sipnic                  => 'Ethernet',
+    outboundaddress         => '3178723000',
+    defaulticpassword       => '1234',
+    loggedonuserpassword    => 'vagrant',
 }
 ```
 
