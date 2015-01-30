@@ -52,12 +52,6 @@
 # [defaulticpassword]
 #   Default IC user password. Defaults to 1234.
 #
-# [licensefile]
-#   Path to the .i3lic file
-#
-# [hostid]
-#   Host id to use with the license file
-#
 # === Variables
 #
 # Here you should define a list of variables that this module would require.
@@ -90,9 +84,7 @@
 #   sipnic                  => 'Ethernet',
 #   outboundaddress         => '3178723000',
 #   defaulticpassword       => '1234',    
-#   licensefile             => "c:\\i3\\ic\\license.i3lic",
 #   loggedonuserpassword    => 'vagrant',
-#   hostid                  => '6300270E26DF',
 #  }
 #
 # === Authors
