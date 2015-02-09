@@ -120,14 +120,17 @@ class cicserver::install (
   $hostid,
 )
 {
-  $cicinstallpath                   = "ININ\\2015R1\\CIC_2015_R1"
-  $cicservermsi                     = "ICServer_2015_R1.msi"
-  $interactionfirmwaremsi           = 'InteractionFirmware_2015_R1.msi'
-  $mediaservermsi                   = 'MediaServer_2015_R1.msi'
+
+  $daascache                        = "C:\\daas-cache\\"
+
+  $interactionfirmwaremsi           = "${daascache}\\${source}\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi"
+  $mediaservermsi                   = "${daascache}\\${source}\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi"
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
   $mediaserverregistrationnewdata   = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
+
+  
 
   if ($operatingsystem != 'Windows')
   {
@@ -148,21 +151,13 @@ class cicserver::install (
   {
     installed:
     {
-
-      # ===================================
-      # -= Download Interaction Firmware -=
-      # ===================================
-
-      debug("Downloading Interaction Firmware")
-      download_file("${interactionfirmwaremsi}", "${source}\\${cicinstallpath}\\Installs\\ServerComponents", "${cache_dir}", "${source_user}", "${source_password}")
-
       # ===================================
       # -= Install Interaction Firmware -=
       # ===================================
       
       debug("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
-        command   => "msiexec /i ${cache_dir}\\${interactionfirmwaremsi} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
+        command   => "msiexec /i ${interactionfirmwaremsi} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
         path      => $::path,
         cwd       => $::system32,
         creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
@@ -256,14 +251,7 @@ class cicserver::install (
         require => Exec['setupassistant-run'],
         before  => Package['mediaserver'],
       }
-
-      # ===========================
-      # -= Download Media Server =-
-      # ===========================
-
-      debug("Downloading Media Server")
-      download_file("${mediaservermsi}", "${source}\\${cicinstallpath}\\Installs\\Off-ServerComponents", "${cache_dir}", "${source_user}", "${source_password}")
-
+      
       # ==========================
       # -= Install Media Server =-
       # ==========================
@@ -271,7 +259,7 @@ class cicserver::install (
       debug("Installing Media Server")
       package {'mediaserver':
         ensure          => installed,
-        source          => "${cache_dir}\\${mediaservermsi}",
+        source          => "${mediaservermsi}",
         install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
@@ -290,7 +278,7 @@ class cicserver::install (
 
       # TODO Change filename based on number of CPU cores
       debug("Downloading Media Server License")
-      download_file("mediaservertest_40_02cores_prod_vm.i3lic", "${source}\\Licenses\\MediaServer", "${cache_dir}", "${source_user}", "${source_password}")
+      download_file("mediaservertest_40_02cores_prod_vm.i3lic", "${daascache}\\Licenses\\MediaServer", "${cache_dir}", "${source_user}", "${source_password}")
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
         ensure              => file,
