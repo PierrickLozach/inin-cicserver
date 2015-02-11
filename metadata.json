@@ -1,12 +1,12 @@
 {
   "name": "PierrickL-cicserver",
-  "version": "1.0.0",
-  "author": "pierrick",
-  "summary": "Installs CIC server and required software",
-  "license": "Apache 2.0",
+  "version": "1.0.1",
+  "author": "Pierrick Lozach",
+  "summary": "Configures pre-installed CIC server",
+  "license": "Apache-2.0",
   "source": "https://github.com/PierrickI3/inin-cicserver",
-  "project_page": null,
-  "issues_url": null,
+  "project_page": "https://github.com/PierrickI3/inin-cicserver",
+  "issues_url": "https://github.com/PierrickI3/inin-cicserver/issues",
   "dependencies": [
     {"name":"puppetlabs/stdlib","version_requirement":">= 4.4.0"},
     {"name":"puppetlabs/powershell","version_requirement":">= 1.0.4"},
@@ -18,6 +18,4 @@
       "operatingsystem":"Windows"
     }
   ]
-
 }
-

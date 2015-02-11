@@ -71,19 +71,20 @@
 #   source_user             => '',
 #   source_password         => '',
 #   survey                  => 'c:/i3/ic/manifest/newsurvey.icsurvey',
-#   installnodomain         => true,      
+#   installnodomain         => true,
 #   organizationname        => 'organizationname',
 #   locationname            => 'locationname',
 #   sitename                => 'sitename',
-#   dbreporttype            => 'db',     
-#   dbservertype            => 'mssql', 
+#   dbreporttype            => 'db',
+#   dbservertype            => 'mssql',
 #   dbtablename             => 'I3_IC',
-#   dialplanlocalareacode   => '317',     
+#   dialplanlocalareacode   => '317',
 #   emailfbmc               => true,
 #   recordingspath          => "C:\\I3\\IC\\Recordings",
 #   sipnic                  => 'Ethernet',
 #   outboundaddress         => '3178723000',
-#   defaulticpassword       => '1234',    
+#   defaulticpassword       => '1234',
+#   licensefile             => "C:\\vagrant-data\\cic-license.i3lic",
 #   loggedonuserpassword    => 'vagrant',
 #  }
 #
@@ -117,7 +118,6 @@ class cicserver::install (
   $defaulticpassword,
   $licensefile,
   $loggedonuserpassword,
-  $hostid,
 )
 {
 
@@ -130,7 +130,7 @@ class cicserver::install (
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
   $mediaserverregistrationnewdata   = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
 
-  
+
 
   if ($operatingsystem != 'Windows')
   {
@@ -154,7 +154,7 @@ class cicserver::install (
       # ===================================
       # -= Install Interaction Firmware -=
       # ===================================
-      
+
       debug("Installing Interaction Firmware")
       exec {"interactionfirmware-install-run":
         command   => "msiexec /i ${interactionfirmwaremsi} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
@@ -176,16 +176,15 @@ class cicserver::install (
         organizationname      => $organizationname,
         locationname          => $locationname,
         sitename              => $sitename,
-        dbreporttype          => $dbreporttype,      
+        dbreporttype          => $dbreporttype,
         dbtablename           => $dbtablename,
         dialplanlocalareacode => $dialplanlocalareacode,
         emailfbmc             => $emailfbmc,
         recordingspath        => $recordingspath,
         sipnic                => $sipnic,
         outboundaddress       => $outboundaddress,
-        defaulticpassword     => $defaulticpassword,    
-        licensefile           => $licensefile,  
-        hostid                => $hostid,
+        defaulticpassword     => $defaulticpassword,
+        licensefile           => $licensefile,
         before                => Exec['setupassistant-run'],
       }
 
@@ -211,11 +210,11 @@ class cicserver::install (
           {
             sleep 10
             \$sacomplete = Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete
-            LogWrite 'Setup Assistant Complete? ' 
+            LogWrite 'Setup Assistant Complete? '
             LogWrite \$sacomplete
           }while (\$sacomplete -eq 0)
         }
-        
+
         Write-Host \"Starting Setup Assistant... this will take a while to complete. Please wait...\"
         LogWrite 'Starting setup assistant...'
         Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
@@ -251,7 +250,7 @@ class cicserver::install (
         require => Exec['setupassistant-run'],
         before  => Package['mediaserver'],
       }
-      
+
       # ==========================
       # -= Install Media Server =-
       # ==========================
@@ -285,7 +284,7 @@ class cicserver::install (
         source              => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
         source_permissions  => ignore,
       }
-      
+
       debug("Install Media Server license")
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type      => string,
@@ -296,14 +295,14 @@ class cicserver::install (
         ],
         before    => Service['ININMediaServer'],
       }
-      
+
       debug("Starting Media Server")
       service {'ININMediaServer':
         ensure    => running,
         enable    => true,
         require   => Package['mediaserver'],
       }
-      
+
       debug("Creating script to pair CIC and Media server")
       file {"mediaserver-pairing":
         ensure    => present,
@@ -313,21 +312,21 @@ class cicserver::install (
         \$uri = New-Object System.Uri (\"${mediaserverregistrationurl}\")
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
         \$mycreds = New-Object System.Management.Automation.PSCredential (\"admin\", \$secpasswd)
-        
+
         \$mediaserverPath = \"c:\\i3\\ic\\resources\\MediaServerConfig.xml\"
         \$commandServerCount = 0
         \$finishedLongWait = \$false;
 
         for(\$provisionCount = 0; \$provisionCount -lt 15; \$provisionCount++)
         {
-            try { 
+            try {
                 \$r = Invoke-WebRequest -Uri \$uri.AbsoluteUri -Credential \$mycreds  -Method Post -Body \"${mediaserverregistrationnewdata}\"
-                
+
             } catch {
                 \$x =  \$_.Exception.Message
                 write-host \$x -ForegroundColor yellow
             }
-        
+
             sleep 10
             [xml]\$mediaServerConfig = Get-Content \$mediaserverPath
             \$commandServers = \$mediaServerConfig.SelectSingleNode(\"//MediaServerConfig/CommandServers\")
@@ -337,9 +336,9 @@ class cicserver::install (
                 write-host \"command server provisioned\"
                 \$provisionCount = 100;
                 break;
-        
+
             }
-        
+
             if(\$provisionCount -eq 14 -And !\$finishedLongWait)
             {
                 \$finishedLongWait= \$true
@@ -349,16 +348,16 @@ class cicserver::install (
                 \$provisionCount = 0;
             }
         }
-        
+
         if (\$commandServerCount -eq 0){
-            write-host \"Error provisioning media server\" -ForegroundColor red 
+            write-host \"Error provisioning media server\" -ForegroundColor red
         }
-        
+
         write-host \"Approving certificate in CIC\"
         function ApproveCertificate(\$certPath){
           Set-ItemProperty -path \"Registry::\$certPath\" -name Status -value Allowed
         }
-        
+
         \$certs = Get-ChildItem -Path \"hklm:\\Software\\Wow6432Node\\Interactive Intelligence\\EIC\\Directory Services\\Root\\${sitename}\\Production\\Config Certificates\\Config Subsystems Certificates\"
         ApproveCertificate \$certs[0].name
         ApproveCertificate \$certs[1].name
@@ -368,17 +367,17 @@ class cicserver::install (
             \$WshShell = New-Object -ComObject WScript.Shell
             \$Shortcut = \$WshShell.CreateShortcut(\"\$env:USERPROFILE\\Desktop\\\$description.url\")
             \$Shortcut.TargetPath = \$AppLocation
-            #\$Shortcut.Description = \$description 
+            #\$Shortcut.Description = \$description
             \$Shortcut.Save()
         }
-        
+
         CreateShortcut \"http://localhost:8084\" \"Media_Server\"
         ",
         require   => [
           Service['ININMediaServer'],
         ],
       }
-      
+
         debug("Pairing CIC and Media server")
         exec {"mediaserver-pair-cic":
         command   => "${cache_dir}\\mediaserverpairing.ps1",
@@ -388,7 +387,7 @@ class cicserver::install (
           Package['mediaserver'],
         ],
       }
-      
+
     }
     uninstalled:
     {

@@ -102,7 +102,6 @@ class {'cicserver::icsurvey':
 	defaulticpassword		=> '1234',				# only valid for users created by ic setup assistant
 	licensefile				=> "c:\\i3\\ic\\iclicense.i3lic",
 	loggedonuserpassword 	=> 'vagrant',
-	hostid					=> '6300270E26DF',
 }
 ```
 

@@ -49,9 +49,6 @@
 # [licensefile]
 #	Path to the .i3lic file
 #
-# [hostid]
-# 	host id to use with the license file
-#
 # === Variables
 #
 # Here you should define a list of variables that this module would require.
@@ -80,7 +77,6 @@
 # 	outboundaddress			=> '3178723000',
 # 	defaulticpassword		=> '1234',		
 # 	licensefile				=> "c:\\i3\\ic\\license.i3lic",	
-# 	hostid					=> '6300270E26DF',
 #  }
 #
 # === Authors
@@ -107,7 +103,6 @@ class cicserver::icsurvey (
 	$outboundaddress 		= '3178723000',
 	$defaulticpassword 		= '1234',
 	$licensefile			= "C:\\I3\\IC\\iclicense.i3lic",
-	$hostid,
 ){
 
 	require stdlib
