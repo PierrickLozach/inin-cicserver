@@ -121,7 +121,7 @@ class cicserver::install (
 )
 {
 
-  $daascache                        = "C:\\daas-cache\\"
+  $daascache                        = 'C:\\daas-cache\\'
 
   $interactionfirmwaremsi           = "${daascache}\\${source}\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi"
   $mediaservermsi                   = "${daascache}\\${source}\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi"
@@ -134,14 +134,14 @@ class cicserver::install (
 
   if ($operatingsystem != 'Windows')
   {
-    err("This module works on Windows only!")
-    fail("Unsupported OS")
+    err('This module works on Windows only!')
+    fail('Unsupported OS')
   }
 
   $cache_dir = hiera('core::cache_dir', 'c:/users/vagrant/appdata/local/temp') # If I use c:/windows/temp then a circular dependency occurs when used with SQL
-  if (!defined(File["${cache_dir}"]))
+  if (!defined(File[$cache_dir]))
   {
-    file {"${cache_dir}":
+    file {$cache_dir:
       ensure   => directory,
       provider => windows,
     }
@@ -155,21 +155,21 @@ class cicserver::install (
       # -= Install Interaction Firmware -=
       # ===================================
 
-      debug("Installing Interaction Firmware")
-      exec {"interactionfirmware-install-run":
-        command   => "msiexec /i ${interactionfirmwaremsi} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
-        path      => $::path,
-        cwd       => $::system32,
-        creates   => "C:/I3/IC/Server/Firmware/firmware_model_mapping.xml",
-        provider  => powershell,
-        timeout   => 1800,
+      debug('Installing Interaction Firmware')
+      exec {'interactionfirmware-install-run':
+        command  => "msiexec /i ${interactionfirmwaremsi} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
+        path     => $::path,
+        cwd      => $::system32,
+        creates  => 'C:/I3/IC/Server/Firmware/firmware_model_mapping.xml',
+        provider => powershell,
+        timeout  => 1800,
       }
 
       # =====================
       # -= Setup Assistant =-
       # =====================
 
-      debug("Creating ICSurvey file...")
+      debug('Creating ICSurvey file...')
       class {'cicserver::icsurvey':
         path                  => $survey, # TODO Probably needs to move/generate this somewhere else
         installnodomain       => $installnodomain,
@@ -188,7 +188,7 @@ class cicserver::install (
         before                => Exec['setupassistant-run'],
       }
 
-      debug("Creating Setup Assistant powershell script...")
+      debug('Creating Setup Assistant powershell script...')
       file {"${cache_dir}\\RunSetupAssistant.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
@@ -217,7 +217,7 @@ class cicserver::install (
 
         Write-Host \"Starting Setup Assistant... this will take a while to complete. Please wait...\"
         LogWrite 'Starting setup assistant...'
-        Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=$survey\"
+        Invoke-Expression \"C:\\I3\\IC\\Server\\icsetupu.exe /f=${survey}\"
         WaitForSetupAssistantToFinish
 
         LogWrite 'Sleeping for 180 seconds while waiting for setup assistant to finish.'
@@ -226,23 +226,23 @@ class cicserver::install (
         ",
       }
 
-      debug("Running setup assistant")
+      debug('Running setup assistant')
       exec {'setupassistant-run':
-        command   => "${cache_dir}\\RunSetupAssistant.ps1",
-        onlyif    => [
+        command  => "${cache_dir}\\RunSetupAssistant.ps1",
+        onlyif   => [
           "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
           "if ((Get-ItemProperty (\"${licensefile}\") -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
           ],
-        provider  => powershell,
-        timeout   => 3600,
-        require   => [
+        provider => powershell,
+        timeout  => 3600,
+        require  => [
           Exec['interactionfirmware-install-run'],
           File["${cache_dir}\\RunSetupAssistant.ps1"],
           Class['cicserver::icsurvey'],
         ],
       }
 
-      debug("Starting Interaction Center")
+      debug('Starting Interaction Center')
       service {'cicserver-service-start':
         ensure  => running,
         enable  => true,
@@ -255,11 +255,11 @@ class cicserver::install (
       # -= Install Media Server =-
       # ==========================
 
-      debug("Installing Media Server")
+      debug('Installing Media Server')
       package {'mediaserver':
         ensure          => installed,
-        source          => "${mediaservermsi}",
-        install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
+        source          => $mediaservermsi,
+        install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED'        => 'CA1E4FED70D14679362C37DF14F7C88A' }],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
       }
@@ -268,46 +268,46 @@ class cicserver::install (
       # -= Configuring Media Server =-
       # ==============================
 
-      debug("Setting web config login password")
+      debug('Setting web config login password')
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
-        type      => string,
-        data      => 'CA1E4FED70D14679362C37DF14F7C88A',
-        require   => Package['mediaserver'],
+        type    => string,
+        data    => 'CA1E4FED70D14679362C37DF14F7C88A',
+        require => Package['mediaserver'],
       }
 
       # TODO Change filename based on number of CPU cores
-      debug("Downloading Media Server License")
-      download_file("mediaservertest_40_02cores_prod_vm.i3lic", "${daascache}\\Licenses\\MediaServer", "${cache_dir}", "${source_user}", "${source_password}")
+      debug('Downloading Media Server License')
+      download_file('mediaservertest_40_02cores_prod_vm.i3lic', "${daascache}\\Licenses\\MediaServer", $cache_dir, $source_user, $source_password)
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
-        ensure              => file,
-        source              => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
-        source_permissions  => ignore,
+        ensure             => file,
+        source             => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
+        source_permissions => ignore,
       }
 
-      debug("Install Media Server license")
+      debug('Install Media Server license')
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
-        type      => string,
-        data      => "C:\\I3\\IC\\MediaServerLicense.i3lic",
-        require   => [
+        type    => string,
+        data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
+        require => [
           Package['mediaserver'],
           File['c:/i3/ic/mediaserverlicense.i3lic'],
         ],
-        before    => Service['ININMediaServer'],
+        before  => Service['ININMediaServer'],
       }
 
-      debug("Starting Media Server")
+      debug('Starting Media Server')
       service {'ININMediaServer':
-        ensure    => running,
-        enable    => true,
-        require   => Package['mediaserver'],
+        ensure  => running,
+        enable  => true,
+        require => Package['mediaserver'],
       }
 
-      debug("Creating script to pair CIC and Media server")
-      file {"mediaserver-pairing":
-        ensure    => present,
-        path      => "${cache_dir}\\mediaserverpairing.ps1",
-        content   => "
+      debug('Creating script to pair CIC and Media server')
+      file {'mediaserver-pairing':
+        ensure  => present,
+        path    => "${cache_dir}\\mediaserverpairing.ps1",
+        content => "
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
         \$uri = New-Object System.Uri (\"${mediaserverregistrationurl}\")
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
@@ -373,16 +373,16 @@ class cicserver::install (
 
         CreateShortcut \"http://localhost:8084\" \"Media_Server\"
         ",
-        require   => [
+        require => [
           Service['ININMediaServer'],
         ],
       }
 
-        debug("Pairing CIC and Media server")
-        exec {"mediaserver-pair-cic":
-        command   => "${cache_dir}\\mediaserverpairing.ps1",
-        provider  => powershell,
-        require   => [
+        debug('Pairing CIC and Media server')
+        exec {'mediaserver-pair-cic':
+        command  => "${cache_dir}\\mediaserverpairing.ps1",
+        provider => powershell,
+        require  => [
           File['mediaserver-pairing'],
           Package['mediaserver'],
         ],

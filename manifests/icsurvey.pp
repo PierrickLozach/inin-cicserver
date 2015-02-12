@@ -88,46 +88,46 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 class cicserver::icsurvey (
-	$path 					= "C:\\I3\\IC\\Manifest\\newsurvey.icsurvey",
-	$installnodomain 		= true,
-	$organizationname		= 'organizationname',
-	$locationname 			= 'locationname',
-	$sitename				= 'sitename',
-	$dbreporttype 			= 'db',
-	$dbservertype 			= 'mssql',
-	$dbtablename 			= 'I3_IC',
-	$dialplanlocalareacode 	= '317',
-	$emailfbmc 				= false,
-	$recordingspath 		= "C:\\I3\\IC\\Recordings",
-	$sipnic 				= 'Ethernet',
-	$outboundaddress 		= '3178723000',
-	$defaulticpassword 		= '1234',
-	$licensefile			= "C:\\I3\\IC\\iclicense.i3lic",
+  $path           = "C:\\I3\\IC\\Manifest\\newsurvey.icsurvey",
+  $installnodomain     = true,
+  $organizationname    = 'organizationname',
+  $locationname       = 'locationname',
+  $sitename        = 'sitename',
+  $dbreporttype       = 'db',
+  $dbservertype       = 'mssql',
+  $dbtablename       = 'I3_IC',
+  $dialplanlocalareacode   = '317',
+  $emailfbmc         = false,
+  $recordingspath     = 'C:\\I3\\IC\\Recordings',
+  $sipnic         = 'Ethernet',
+  $outboundaddress     = '3178723000',
+  $defaulticpassword     = '1234',
+  $licensefile      = 'C:\\I3\\IC\\iclicense.i3lic',
 ){
 
-	require stdlib
+  require stdlib
 
-	validate_absolute_path($path)
-	validate_bool($emailfbmc)
+  validate_absolute_path($path)
+  validate_bool($emailfbmc)
 
-	if ($emailfbmc) {
-		$emailselected = 1
-		$usefbmc = 1
-	}
-	else {
-		$emailselected = 0
-	}
+  if ($emailfbmc) {
+    $emailselected = 1
+    $usefbmc = 1
+  }
+  else {
+    $emailselected = 0
+  }
 
-	$useinstallnodomain = bool2num($installnodomain)
+  $useinstallnodomain = bool2num($installnodomain)
 
-	$manifest_dir = ["C:\\I3", "C:\\I3\\IC", "C:\\I3\\IC\\Manifest",]
+  $manifest_dir = ['C:\\I3', 'C:\\I3\\IC', 'C:\\I3\\IC\\Manifest',]
 
-	file {$manifest_dir:
-		ensure	=> directory,
-	}
+  file {$manifest_dir:
+    ensure  => directory,
+  }
 
-	file {'icsurvey':
-		ensure 	=> present,
+  file {'icsurvey':
+    ensure      => present,
         path    => $path,
         content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
     }
