@@ -1,7 +1,6 @@
 Vagrant.configure('2') do |config|
   config.vm.communicator = "winrm"
   config.vm.box = "cic-2015r1"
-  config.vm.box_url = "file:///home/pierrick/Downloads/cic-2015R1-0.1.0.box"
   config.vm.synced_folder = "tmp", "/vagrant-data"
   config.vm.synced_folder = "/var/cache/daas", "/daas-cache"
   config.vm.hostname = "cicservertest"
