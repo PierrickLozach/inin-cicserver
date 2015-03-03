@@ -1,5 +1,4 @@
-# cicserver::install
-# cicserver::icsurvey
+# cicserver::install & cicserver::icsurvey
 
 #### Table of Contents
 
