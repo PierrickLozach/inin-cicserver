@@ -1,2 +1,2 @@
-sudo cd $WORKSPACE/tests/integration/jenkins
+sudo cd tests/integration/jenkins
 sudo vagrant up --debug
