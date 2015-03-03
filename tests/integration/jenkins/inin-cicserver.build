@@ -1,1 +1,2 @@
+vagrant box list
 vagrant up --debug
