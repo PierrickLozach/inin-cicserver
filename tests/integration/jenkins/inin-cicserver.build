@@ -1,2 +1,1 @@
-sudo cd tests/integration/jenkins
-sudo vagrant up --debug
+vagrant up --debug
