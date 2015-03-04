@@ -123,8 +123,8 @@ class cicserver::install (
 
   $daascache                        = 'C:\\daas-cache\\'
 
-  $interactionfirmwaremsi           = "${daascache}\\${source}\\InteractionFirmware_2015_R2.msi"
-  $mediaservermsi                   = "${daascache}\\${source}\\MediaServer_2015_R2.msi"
+  $interactionfirmwaremsi           = "${daascache}\\InteractionFirmware_2015_R2.msi"
+  $mediaservermsi                   = "${daascache}\\MediaServer_2015_R2.msi"
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
