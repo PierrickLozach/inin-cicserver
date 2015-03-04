@@ -23,3 +23,4 @@
 2015-02-08: Changing paths
 2015-02-11: Removing hostid
 2015-02-12: Linting changes
+2015-03-04: Removing the need for the source parameter when installing CIC
