@@ -123,14 +123,12 @@ class cicserver::install (
 
   $daascache                        = 'C:\\daas-cache\\'
 
-  $interactionfirmwaremsi           = "${daascache}\\${source}\\Installs\\ServerComponents\\InteractionFirmware_2015_R1.msi"
-  $mediaservermsi                   = "${daascache}\\${source}\\Installs\\Off-ServerComponents\\MediaServer_2015_R1.msi"
+  $interactionfirmwaremsi           = "${daascache}\\${source}\\InteractionFirmware_2015_R2.msi"
+  $mediaservermsi                   = "${daascache}\\${source}\\MediaServer_2015_R2.msi"
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
   $mediaserverregistrationnewdata   = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
-
-
 
   if ($operatingsystem != 'Windows')
   {
@@ -259,7 +257,7 @@ class cicserver::install (
       package {'mediaserver':
         ensure          => installed,
         source          => $mediaservermsi,
-        install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED'        => 'CA1E4FED70D14679362C37DF14F7C88A' }],
+        install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
       }
@@ -336,7 +334,6 @@ class cicserver::install (
                 write-host \"command server provisioned\"
                 \$provisionCount = 100;
                 break;
-
             }
 
             if(\$provisionCount -eq 14 -And !\$finishedLongWait)
@@ -373,13 +370,11 @@ class cicserver::install (
 
         CreateShortcut \"http://localhost:8084\" \"Media_Server\"
         ",
-        require => [
-          Service['ININMediaServer'],
-        ],
+        require => Service['ININMediaServer'],
       }
 
-        debug('Pairing CIC and Media server')
-        exec {'mediaserver-pair-cic':
+      debug('Pairing CIC and Media server')
+      exec {'mediaserver-pair-cic':
         command  => "${cache_dir}\\mediaserverpairing.ps1",
         provider => powershell,
         require  => [
