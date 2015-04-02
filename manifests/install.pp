@@ -291,7 +291,7 @@ class cicserver::install (
         content => "
         function Service-Start (\$ServiceName, \$TimeoutSeconds) {
           try {
-              $service = Get-Service -Name \$ServiceName
+              \$service = Get-Service -Name \$ServiceName
               if (\$service.Status -eq \"Stopped\") {
                   \$service.start()
                   \$service.WaitForStatus('Running', (New-TimeSpan -Seconds \$TimeoutSeconds))
