@@ -280,16 +280,38 @@ class cicserver::install (
           Package['mediaserver'],
           File['c:/i3/ic/mediaserverlicense.i3lic'],
         ],
-        before  => Service['ININMediaServer'],
+        before  => Exec['ININMediaServer-Start'],
+      }
+
+      debug('Creating Setup Assistant powershell script...')
+      file {"${cache_dir}\\StartMediaServerService.ps1":
+        ensure  => 'file',
+        owner   => 'Vagrant',
+        group   => 'Administrators',
+        content => "
+        function Service-Start (\$ServiceName, \$TimeoutSeconds) {
+          try {
+              $service = Get-Service -Name \$ServiceName
+              if (\$service.Status -eq \"Stopped\") {
+                  \$service.start()
+                  \$service.WaitForStatus('Running', (New-TimeSpan -Seconds \$TimeoutSeconds))
+              } elseif (\$currentStatus -eq 'Running') {
+                  write-host \" ==> \$ServiceName is already running service\"
+              }
+          } catch { \$CurrentStatus = \"ERROR\" }
+          return \$CurrentStatus
+        }
+        Service-Start 'ININMediaServer' 30
+        ",
       }
 
       debug('Starting Media Server')
-      service {'ININMediaServer':
-        ensure  => running,
-        enable  => true,
+      exec {'ININMediaServer-Start' :
+        command => "${cache_dir}\\StartMediaServerService.ps1",
+        provider => powershell,
         require => Package['mediaserver'],
       }
-
+      
       debug('Creating script to pair CIC and Media server')
       file {'mediaserver-pairing':
         ensure  => present,
@@ -359,7 +381,7 @@ class cicserver::install (
 
         CreateShortcut \"http://localhost:8084\" \"Media_Server\"
         ",
-        require => Service['ININMediaServer'],
+        require => Exec['ININMediaServer-Start'],
       }
 
       debug('Pairing CIC and Media server')

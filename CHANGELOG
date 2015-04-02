@@ -24,3 +24,4 @@
 2015-02-11: Removing hostid
 2015-02-12: Linting changes
 2015-03-04: Removing the need for the source parameter when installing CIC
+2015-04-02: Changing how the ININ Media Server is started as it can timeout on slower machines
