@@ -111,9 +111,9 @@ class cicserver::install (
 {
 
   $daascache                        = 'C:\\daas-cache\\'
-
-  $interactionfirmwaremsi           = "${daascache}\\InteractionFirmware_2015_R2.msi"
-  $mediaservermsi                   = "${daascache}\\MediaServer_2015_R2.msi"
+  $mountdriveletter                 = 'e:'
+  $ciciso                           = 'CIC_2015_R2.iso'
+  $mediaservermsi                   = "${mountdriveletter}\\Installs\\ServerComponents\\MediaServer_2015_R2.msi"
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
@@ -138,19 +138,6 @@ class cicserver::install (
   {
     installed:
     {
-      # ===================================
-      # -= Install Interaction Firmware -=
-      # ===================================
-
-      debug('Installing Interaction Firmware')
-      exec {'interactionfirmware-install-run':
-        command  => "msiexec /i ${interactionfirmwaremsi} STARTEDBYEXEORIUPDATE=1 REBOOT=ReallySuppress /l*v interactionfirmware.log /qn /norestart",
-        path     => $::path,
-        cwd      => $::system32,
-        creates  => 'C:/I3/IC/Server/Firmware/firmware_model_mapping.xml',
-        provider => powershell,
-        timeout  => 1800,
-      }
 
       # =====================
       # -= Setup Assistant =-
@@ -242,6 +229,18 @@ class cicserver::install (
       # -= Install Media Server =-
       # ==========================
 
+      # Mount CIC ISO
+      debug('Mounting CIC ISO')
+      exec {'mount-cic-iso': 
+        command  => "imdisk -a -f \"${daascache}\\${ciciso}\" -m e:",
+        path     => $::path,
+        cwd      => $::system32,
+        creates  => '${mountdriveletter}/Installs/Install.exe',
+        timeout  => 30,
+        before   => Package['mediaserver'],
+      }
+
+      # Install Media Server
       debug('Installing Media Server')
       package {'mediaserver':
         ensure          => installed,
