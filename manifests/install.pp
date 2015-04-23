@@ -210,7 +210,6 @@ class cicserver::install (
         provider => powershell,
         timeout  => 3600,
         require  => [
-          Exec['interactionfirmware-install-run'],
           File["${cache_dir}\\RunSetupAssistant.ps1"],
           Class['cicserver::icsurvey'],
         ],
@@ -232,10 +231,10 @@ class cicserver::install (
       # Mount CIC ISO
       debug('Mounting CIC ISO')
       exec {'mount-cic-iso': 
-        command  => "imdisk -a -f \"${daascache}\\${ciciso}\" -m e:",
+        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m e:",
         path     => $::path,
         cwd      => $::system32,
-        creates  => '${mountdriveletter}/Installs/Install.exe',
+        creates  => "${mountdriveletter}/Installs/Install.exe",
         timeout  => 30,
         before   => Package['mediaserver'],
       }
