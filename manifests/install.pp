@@ -38,13 +38,13 @@
 #   local area code. Defaults to 317.
 #
 # [emailfbmc]
-#   Set to true to enable IC's FBMC (File Based Mail Connector). Defaults to false.
+#   Set to true to enable IC's FBMC (File Based Mail Connector). Default: false.
 #
 # [recordingspath]
 #   Path to store the compressed recordings. Defaults to C:/I3/IC/Recordings.
 #
 # [sipnic]
-#   Name of the network card (NIC) to use for SIP/RTP transport. Defaults to Ethernet.
+#   Network card (NIC) to use for SIP/RTP transport. Default: Ethernet.
 #
 # [outboundaddress]
 #   Phone number to show for outbound calls. Defaults to 3178723000.
@@ -202,8 +202,8 @@ class cicserver::install (
 
       debug('Running setup assistant')
       exec {'setupassistant-run':
-        command  => "${cache_dir}\\RunSetupAssistant.ps1",
-        onlyif   => [
+        command => "${cache_dir}\\RunSetupAssistant.ps1",
+        onlyif  => [
           "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
           "if ((Get-ItemProperty (\"${licensefile}\") -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
           ],
