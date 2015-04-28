@@ -231,7 +231,7 @@ class cicserver::install (
       # Mount CIC ISO
       debug('Mounting CIC ISO')
       exec {'mount-cic-iso': 
-        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m e:",
+        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m ${mountdriveletter}",
         path     => $::path,
         cwd      => $::system32,
         creates  => "${mountdriveletter}/Installs/Install.exe",
