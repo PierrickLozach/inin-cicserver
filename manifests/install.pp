@@ -119,7 +119,7 @@ class cicserver::install (
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
   $mediaserverregistrationnewdata   = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
 
-  if ($operatingsystem != 'Windows')
+  if ($::operatingsystem != 'Windows')
   {
     err('This module works on Windows only!')
     fail('Unsupported OS')
