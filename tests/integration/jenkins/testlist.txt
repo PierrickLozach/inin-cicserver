@@ -1,0 +1,41 @@
+Static Analysis:
+================
+
+Syntax Check:
+-------------
+When committing to GitHub, Puppet parser/syntax check: puppet parser validate <file>.pp
+Execute Shell: 
+for file in $(find . -iname '*.pp’)
+do
+  puppet parser validate \
+    --render-as s \
+    --modulepath=modules \
+    "$file" || exit 1;
+done
+
+Lint:
+-----
+http://puppet-lint.com
+gem install puppet-lint
+Execute shell: find . -iname *.pp -exec puppet-lint --log-format "%{path}:%{linenumber}:%{check}:%{KIND}:%{message}" {}  \;
+Add a "Scan for compiler warnings" post-build action
+Add puppet-lint parer to "scan console log"
+
+ERB Syntax check: erb -P -x -T '-' <file>.erb | ruby -c
+
+
+Module Testing:
+---------------
+Rspec-Puppet (http://rspec-puppet.com)
+
+Catalog Testing:
+----------------
+Execute a catalog compile: puppet apply <file>.pp --noop
+
+Dynamic Analysis:
+-----------------
+Test deployments on all server types
+
+Integration testing:
+--------------------
+Ensures that systems still serve their function after new code has been applied

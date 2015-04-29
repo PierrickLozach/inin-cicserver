@@ -88,21 +88,21 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 class cicserver::icsurvey (
-  $path           = "C:\\I3\\IC\\Manifest\\newsurvey.icsurvey",
-  $installnodomain     = true,
-  $organizationname    = 'organizationname',
-  $locationname       = 'locationname',
-  $sitename        = 'sitename',
-  $dbreporttype       = 'db',
-  $dbservertype       = 'mssql',
-  $dbtablename       = 'I3_IC',
-  $dialplanlocalareacode   = '317',
-  $emailfbmc         = false,
-  $recordingspath     = 'C:\\I3\\IC\\Recordings',
-  $sipnic         = 'Ethernet',
-  $outboundaddress     = '3178723000',
-  $defaulticpassword     = '1234',
-  $licensefile      = 'C:\\I3\\IC\\iclicense.i3lic',
+  $path                   = "C:\\I3\\IC\\Manifest\\newsurvey.icsurvey",
+  $installnodomain        = true,
+  $organizationname       = 'organizationname',
+  $locationname           = 'locationname',
+  $sitename               = 'sitename',
+  $dbreporttype           = 'db',
+  $dbservertype           = 'mssql',
+  $dbtablename            = 'I3_IC',
+  $dialplanlocalareacode  = '317',
+  $emailfbmc              = false,
+  $recordingspath         = 'C:\\I3\\IC\\Recordings',
+  $sipnic                 = 'Ethernet',
+  $outboundaddress        = '3178723000',
+  $defaulticpassword      = '1234',
+  $licensefile            = 'C:\\I3\\IC\\iclicense.i3lic',
 ){
 
   require stdlib
