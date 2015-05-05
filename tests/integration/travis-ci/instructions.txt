@@ -1,0 +1,1 @@
+http://bombasticmonkey.com/2012/03/02/automatically-test-your-puppet-modules-with-travis-ci/
