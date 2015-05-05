@@ -63,20 +63,20 @@
 # === Examples
 #
 #  class {'cicserver::icsurvey':
-#	path 					=> 'c:/i3/ic/manifest/newsurvey.icsurvey',
-# 	installnodomain			=> true,			
-# 	organizationname		=> 'organizationname',
-# 	locationname			=> 'locationname',
-# 	sitename				=> 'sitename',
-# 	dbreporttype			=> 'db', 			
-# 	dbtablename				=> 'I3_IC',
+#	  path 					        => 'c:/i3/ic/manifest/newsurvey.icsurvey',
+# 	installnodomain			  => true,			
+# 	organizationname		  => 'organizationname',
+# 	locationname			    => 'locationname',
+# 	sitename				      => 'sitename',
+# 	dbreporttype			    => 'db', 			
+# 	dbtablename				    => 'I3_IC',
 # 	dialplanlocalareacode	=> '317',			
-# 	emailfbmc				=> true,
-# 	recordingspath			=> "C:\\I3\\IC\\Recordings",
-# 	sipnic					=> 'Ethernet',
-# 	outboundaddress			=> '3178723000',
-# 	defaulticpassword		=> '1234',		
-# 	licensefile				=> "c:\\i3\\ic\\license.i3lic",	
+# 	emailfbmc				      => true,
+# 	recordingspath			  => "C:\\I3\\IC\\Recordings",
+# 	sipnic					      => 'Ethernet',
+# 	outboundaddress			  => '3178723000',
+# 	defaulticpassword		  => '1234',		
+# 	licensefile				    => "c:\\i3\\ic\\license.i3lic",	
 #  }
 #
 # === Authors
