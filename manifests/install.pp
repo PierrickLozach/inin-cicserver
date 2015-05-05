@@ -1,6 +1,7 @@
 # == Class: cicserver::install
 #
 # Installs CIC, Interaction Firmware and Media Server then pairs the Media server with the CIC server. All silently.
+# CIC ISO (i.e. CIC_2015_R2.iso) should be in a shared folder linked to C:\daas-cache
 #
 # === Parameters
 #
@@ -8,13 +9,7 @@
 #   installed. No other values are currently supported.
 #
 # [source]
-#   location of the ININ MSI files. Should contain the Installs directory.
-#
-# [source_user]
-#   Optional. Username to access the source specified previously.
-#
-# [source_password]
-#   Optional. Password to access the source specified previously.
+#   Source of the CIC iso file
 #
 # [organization]
 #   Interaction Center Organization Name.
@@ -56,9 +51,7 @@
 #
 #  class {'cicserver::install':
 #   ensure                  => installed,
-#   source                  => '\\\\servername\\path_to_installs_folder',
-#   source_user             => '',
-#   source_password         => '',
+#   source                  => 'e:'
 #   survey                  => 'c:/i3/ic/manifest/newsurvey.icsurvey',
 #   installnodomain         => true,
 #   organizationname        => 'organizationname',
@@ -69,11 +62,11 @@
 #   dbtablename             => 'I3_IC',
 #   dialplanlocalareacode   => '317',
 #   emailfbmc               => true,
-#   recordingspath          => "C:\\I3\\IC\\Recordings",
+#   recordingspath          => 'C:/I3/IC/Recordings',
 #   sipnic                  => 'Ethernet',
 #   outboundaddress         => '3178723000',
 #   defaulticpassword       => '1234',
-#   licensefile             => "C:\\vagrant-data\\cic-license.i3lic",
+#   licensefile             => 'C:/vagrant-data/cic-license.i3lic',
 #   loggedonuserpassword    => 'vagrant',
 #  }
 #
@@ -89,8 +82,6 @@
 class cicserver::install (
   $ensure = installed,
   $source,
-  $source_user,
-  $source_password,
   $survey,
   $installnodomain,
   $organizationname,
@@ -110,10 +101,9 @@ class cicserver::install (
 )
 {
 
-  $daascache                        = 'C:\\daas-cache\\'
-  $mountdriveletter                 = 'e:'
+  $daascache                        = 'C:/daas-cache/'
   $ciciso                           = 'CIC_2015_R2.iso'
-  $mediaservermsi                   = "${mountdriveletter}\\Installs\\ServerComponents\\MediaServer_2015_R2.msi"
+  $mediaservermsi                   = 'MediaServer_2015_R2.msi'
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
@@ -231,10 +221,10 @@ class cicserver::install (
       # Mount CIC ISO
       debug('Mounting CIC ISO')
       exec {'mount-cic-iso': 
-        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m ${mountdriveletter}",
+        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m ${source}",
         path     => $::path,
         cwd      => $::system32,
-        creates  => "${mountdriveletter}/Installs/Install.exe",
+        creates  => "${source}/Installs/Install.exe",
         timeout  => 30,
         before   => Package['mediaserver'],
       }
@@ -243,7 +233,7 @@ class cicserver::install (
       debug('Installing Media Server')
       package {'mediaserver':
         ensure          => installed,
-        source          => $mediaservermsi,
+        source          => "${source}\\Installs\\ServerComponents\\${mediaservermsi}",
         install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
@@ -262,7 +252,7 @@ class cicserver::install (
 
       # TODO Change filename based on number of CPU cores
       debug('Downloading Media Server License')
-      download_file('mediaservertest_40_02cores_prod_vm.i3lic', "${daascache}\\Licenses\\MediaServer", $cache_dir, $source_user, $source_password)
+      download_file('mediaservertest_40_02cores_prod_vm.i3lic', "${daascache}\\Licenses\\MediaServer", $cache_dir, '', '')
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
         ensure             => file,
