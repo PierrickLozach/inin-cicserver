@@ -1,8 +1,6 @@
 class {'cicserver::install':
   ensure                => installed,
   source                => 'l:',
-  source_user           => '',
-  source_password       => '',
   survey                => 'c:/I3/IC/Manifest/newsurvey.icsurvey',
   installnodomain       => true,
   organizationname      => 'testorg',
