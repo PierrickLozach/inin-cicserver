@@ -102,8 +102,8 @@ class cicserver::install (
 {
 
   $daascache                        = 'C:/daas-cache/'
-  $ciciso                           = 'CIC_2015_R2.iso'
-  $mediaservermsi                   = 'MediaServer_2015_R2.msi'
+  $ciciso                           = 'CIC_2015_R3.iso'
+  $mediaservermsi                   = 'MediaServer_2015_R3.msi'
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
