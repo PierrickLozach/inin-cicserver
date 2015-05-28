@@ -224,7 +224,7 @@ class cicserver::install (
         command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m ${source}",
         path     => $::path,
         cwd      => $::system32,
-        creates  => "${source}/Installs/Install.exe",
+        creates  => 'l:/Installs/Install.exe', #TODO Remove source parameter. Creates does not allow variables
         timeout  => 30,
         before   => Package['mediaserver'],
       }
