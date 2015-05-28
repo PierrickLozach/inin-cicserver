@@ -371,6 +371,7 @@ class cicserver::install (
       exec {'mediaserver-pair-cic':
         command  => "${cache_dir}\\mediaserverpairing.ps1",
         provider => powershell,
+        timeout  => 1800,
         require  => [
           File['mediaserver-pairing'],
           Package['mediaserver'],
