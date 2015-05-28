@@ -8,9 +8,6 @@
 # [ensure]
 #   installed. No other values are currently supported.
 #
-# [source]
-#   Source of the CIC iso file
-#
 # [organization]
 #   Interaction Center Organization Name.
 #
@@ -51,7 +48,6 @@
 #
 #  class {'cicserver::install':
 #   ensure                  => installed,
-#   source                  => 'e:'
 #   survey                  => 'c:/i3/ic/manifest/newsurvey.icsurvey',
 #   installnodomain         => true,
 #   organizationname        => 'organizationname',
@@ -81,7 +77,6 @@
 
 class cicserver::install (
   $ensure = installed,
-  $source,
   $survey,
   $installnodomain,
   $organizationname,
@@ -221,10 +216,10 @@ class cicserver::install (
       # Mount CIC ISO
       debug('Mounting CIC ISO')
       exec {'mount-cic-iso': 
-        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m ${source}",
+        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m l:",
         path     => $::path,
         cwd      => $::system32,
-        creates  => 'l:/Installs/Install.exe', #TODO Remove source parameter. Creates does not allow variables
+        creates  => 'l:/Installs/Install.exe',
         timeout  => 30,
         before   => Package['mediaserver'],
       }
@@ -233,7 +228,7 @@ class cicserver::install (
       debug('Installing Media Server')
       package {'mediaserver':
         ensure          => installed,
-        source          => "${source}\\Installs\\Off-ServerComponents\\${mediaservermsi}",
+        source          => "l:\\Installs\\Off-ServerComponents\\${mediaservermsi}",
         install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
