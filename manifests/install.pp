@@ -339,7 +339,7 @@ class cicserver::install (
         source_permissions => ignore,
       }
 
-      debug('Install Media Server license')
+      debug('Installing Media Server license')
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type    => string,
         data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
@@ -350,7 +350,7 @@ class cicserver::install (
         before  => Exec['ININMediaServer-Start'],
       }
 
-      debug('Creating Setup Assistant powershell script...')
+      debug('Creating powershell script to start Media Server service')
       file {"${cache_dir}\\StartMediaServerService.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
@@ -374,9 +374,12 @@ class cicserver::install (
 
       debug('Starting Media Server')
       exec {'ININMediaServer-Start' :
-        command => "${cache_dir}\\StartMediaServerService.ps1",
+        command  => "${cache_dir}\\StartMediaServerService.ps1",
         provider => powershell,
-        require => Package['mediaserver'],
+        require  => [
+          Package['mediaserver'],
+          Exec['mediaserver-latest-patch-run'],
+        ],
       }
       
       debug('Creating script to pair CIC and Media server')
@@ -457,10 +460,7 @@ class cicserver::install (
         command  => "${cache_dir}\\mediaserverpairing.ps1",
         provider => powershell,
         timeout  => 1800,
-        require  => [
-          File['mediaserver-pairing'],
-          Package['mediaserver'],
-        ],
+        require  => File['mediaserver-pairing'],
       }
 
     }
