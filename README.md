@@ -94,7 +94,7 @@ class {'cicserver::icsurvey':
 	dialplanlocalareacode	=> '317',				# only option supported so far
 	emailfbmc				=> true,
 	recordingspath			=> 'C:/I3/IC/Recordings',
-	sipnic					=> 'Ethernet,		    # use the same name as shown in windows
+	sipnic					=> 'Ethernet',		    # use the same name as shown in windows
 	outboundaddress			=> '3178723000',
 	defaulticpassword		=> '1234',				# only valid for users created by ic setup assistant
 	licensefile				=> 'C:/I3/IC/iclicense.i3lic',
