@@ -76,6 +76,7 @@ class { 'cicserver::install':
     sipnic                  => 'Ethernet',
     outboundaddress         => '3178723000',
     defaulticpassword       => '1234',
+    licensefile             => 'C:/vagrant-data/cic-license.i3lic',
     loggedonuserpassword    => 'vagrant',
 }
 ```
