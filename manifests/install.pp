@@ -281,7 +281,7 @@ class cicserver::install (
 
       # We don't need the ISO any more
       debug('Unmounting CIC ISO')
-      exec {'unmount-cic-iso': 
+      exec {'unmount-cic-latest-patch-iso': 
         command  => 'cmd.exe /c imdisk -D -m m:',
         path     => $::path,
         cwd      => $::system32,
