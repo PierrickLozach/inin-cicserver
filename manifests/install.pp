@@ -1,7 +1,9 @@
 # == Class: cicserver::install
 #
-# Installs CIC, Interaction Firmware and Media Server then pairs the Media server with the CIC server. All silently.
-# CIC ISO (i.e. CIC_2015_R2.iso) should be in a shared folder linked to C:\daas-cache
+# Installs CIC, Interaction Firmware and Media Server then pairs 
+# the Media server with the CIC server. All silently.
+# CIC ISO (i.e. CIC_2015_R2.iso) should be in a shared folder 
+# linked to C:\daas-cache
 #
 # === Parameters
 #
@@ -300,6 +302,7 @@ class cicserver::install (
         ensure  => present,
         path    => "${cache_dir}\\mediaserverpairing.ps1",
         content => "
+        [System.Net.ServicePointManager]::SecurityProtocol = 'tls11,tls12'
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {\$true}
         \$uri = New-Object System.Uri (\"${mediaserverregistrationurl}\")
         \$secpasswd = ConvertTo-SecureString \"1234\" -AsPlainText -Force
