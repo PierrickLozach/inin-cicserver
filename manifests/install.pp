@@ -105,7 +105,7 @@ class cicserver::install (
   $ciciso                           = "CIC_${currentversion}.iso"
   $ciclatestpatchiso                = "CIC_${currentversion}_${latestpatch}.iso"
   $mediaservermsi                   = "MediaServer_${currentversion}.msi"
-  $mediaserverlatestpatchmsi        = "MediaServer_${currentversion}_${latestpatch}.msi"
+  $mediaserverlatestpatchmsp        = "MediaServer_${currentversion}_${latestpatch}.msp"
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
@@ -258,22 +258,25 @@ class cicserver::install (
       # Mount CIC Patch
       debug('Mount latest patch')
       exec {'mount-cic-latest-patch-iso': 
-        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciclatestpatchiso}\" -m m:",
-        path     => $::path,
-        cwd      => $::system32,
-        creates  => 'm:/Installs/Install.exe',
-        timeout  => 30,
-        before   => Package['mediaserver-latest-patch'],
+        command => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciclatestpatchiso}\" -m m:",
+        path    => $::path,
+        cwd     => $::system32,
+        creates => 'm:/Installs/Install.exe',
+        timeout => 30,
+        before  => Package['mediaserver-latest-patch'],
+        require => Package['mediaserver'],
       }
 
       # Install Latest Patch
       debug('Installing latest patch')
       package {'mediaserver-latest-patch':
         ensure          => installed,
-        source          => "m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsi}",
+        source          => "m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsp}",
         install_options => [
           '/l*v',
-          "c:\\windows\\logs\\${mediaserverlatestpatchmsi}.log",
+          "c:\\windows\\logs\\${mediaserverlatestpatchmsp}.log",
+          {'STARTEDBYEXEORIUPDATE' => '1'},
+          {'REBOOT'                => 'ReallySuppress'},
         ],
         provider        => 'windows',
         require         => Package['mediaserver'],
