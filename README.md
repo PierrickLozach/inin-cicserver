@@ -62,10 +62,7 @@ for upgrading, you may wish to include an additional section here: Upgrading
 ```puppet
 class { 'cicserver::install':
     ensure                  => installed,
-    source                  => "\\\\server\\path",							# Path to MSIs
-    source_user             => "username",									# If required, username to access the location of MSIs
-    source_password         => "password",
-    survey                  => 'C:\\I3\\IC\\Manifest\\newsurvey.icsurvey',	# Where the survey should be generated (and later on, used by the IC Setup Assistant)
+    survey                  => 'C:/I3/IC/Manifest/newsurvey.icsurvey',	# Where the survey should be generated (and later on, used by the IC Setup Assistant)
     installnodomain         => true,
     organizationname        => 'demoorg',
     locationname            => 'demolocation',
@@ -75,7 +72,7 @@ class { 'cicserver::install':
     dbtablename             => 'I3_IC',
     dialplanlocalareacode   => '317',
     emailfbmc               => true,
-    recordingspath          => "C:\\I3\\IC\\Recordings",
+    recordingspath          => 'C:/I3/IC/Recordings',
     sipnic                  => 'Ethernet',
     outboundaddress         => '3178723000',
     defaulticpassword       => '1234',
@@ -85,7 +82,7 @@ class { 'cicserver::install':
 
 ```puppet
 class {'cicserver::icsurvey':
-	path 					=> 'c:/i3/ic/manifest/newsurvey.icsurvey',
+	path 					=> 'C:/I3/IC/manifest/newsurvey.icsurvey',
 	installnodomain			=> true,				# set to true if no domain
 	organizationname		=> 'organizationname',
 	locationname			=> 'locationname',
@@ -95,11 +92,11 @@ class {'cicserver::icsurvey':
 	dbtablename				=> 'I3_IC',
 	dialplanlocalareacode	=> '317',				# only option supported so far
 	emailfbmc				=> true,
-	recordingspath			=> "c:\\I3\\IC\\Recordings",
-	sipnic					=> 'Ethernet 2',		# use the same name as shown in windows
+	recordingspath			=> 'C:/I3/IC/Recordings',
+	sipnic					=> 'Ethernet,		    # use the same name as shown in windows
 	outboundaddress			=> '3178723000',
 	defaulticpassword		=> '1234',				# only valid for users created by ic setup assistant
-	licensefile				=> "c:\\i3\\ic\\iclicense.i3lic",
+	licensefile				=> 'C:/I3/IC/iclicense.i3lic',
 	loggedonuserpassword 	=> 'vagrant',
 }
 ```
