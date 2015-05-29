@@ -256,40 +256,52 @@ class cicserver::install (
       }
 
       # Mount CIC Patch
-      debug('Mount latest patch')
-      exec {'mount-cic-latest-patch-iso': 
+      debug('Mount latest patch ISO')
+      exec {'mount-cic-latest-patch-iso':
         command => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciclatestpatchiso}\" -m m:",
         path    => $::path,
         cwd     => $::system32,
         creates => 'm:/Installs/Install.exe',
         timeout => 30,
-        before  => Package['mediaserver-latest-patch'],
+        before  => Exec['mediaserver-latest-patch-run'],
+        require => Package['mediaserver'],
+      }
+
+      # Create script to install Latest Patch since puppet does not know how to run MSPs (will be fixed in 4.x: https://tickets.puppetlabs.com/browse/PUP-395)
+      debug('Creating script to install Media server patch')
+      file {'mediaserver-latest-patch-script':
+        ensure  => present,
+        path    => "${cache_dir}\\patchmediaserver.ps1",
+        content => "
+          $parms  = '/update',\"m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsp}\"
+          $parms += 'STARTEDBYEXEORIUPDATE=1'
+          $parms += 'REBOOT=ReallySuppress'
+          $parms += '/l*v'
+          $parms += \"C:\\Windows\\Logs\\icserver-patch-${Now}.log\"
+          $parms += '/qn'
+          $parms += '/norestart'
+          Start-Process -FilePath msiexec -ArgumentList $parms -Wait -Verbose
+        ",
         require => Package['mediaserver'],
       }
 
       # Install Latest Patch
-      debug('Installing latest patch')
-      package {'mediaserver-latest-patch':
-        ensure          => installed,
-        source          => "m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsp}",
-        install_options => [
-          '/l*v',
-          "c:\\windows\\logs\\${mediaserverlatestpatchmsp}.log",
-          {'STARTEDBYEXEORIUPDATE' => '1'},
-          {'REBOOT'                => 'ReallySuppress'},
-        ],
-        provider        => 'windows',
-        require         => Package['mediaserver'],
+      debug('Install Media server patch')
+      exec {'mediaserver-latest-patch-run':
+        command  => "${cache_dir}\\patchmediaserver.ps1",
+        provider => powershell,
+        timeout  => 1800,
+        require  => File['mediaserver-latest-patch-script'],
       }
 
       # We don't need the ISO any more
       debug('Unmounting CIC ISO')
-      exec {'unmount-cic-latest-patch-iso': 
+      exec {'unmount-cic-latest-patch-iso':
         command  => 'cmd.exe /c imdisk -D -m m:',
         path     => $::path,
         cwd      => $::system32,
         timeout  => 30,
-        require  => Package['mediaserver-latest-patch'],
+        require  => Exec['mediaserver-latest-patch-run'],
       }
 
       # ==============================
