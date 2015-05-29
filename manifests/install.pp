@@ -99,8 +99,13 @@ class cicserver::install (
 {
 
   $daascache                        = 'C:/daas-cache/'
-  $ciciso                           = 'CIC_2015_R3.iso'
-  $mediaservermsi                   = 'MediaServer_2015_R3.msi'
+  $currentversion                   = '2015_R3'
+  $latestpatch                      = 'Patch2'
+
+  $ciciso                           = "CIC_${currentversion}.iso"
+  $ciclatestpatchiso                = "CIC_${currentversion}_${latestpatch}.iso"
+  $mediaservermsi                   = "MediaServer_${currentversion}.msi"
+  $mediaserverlatestpatchmsi        = "MediaServer_${currentversion}_${latestpatch}.msi"
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
@@ -218,12 +223,12 @@ class cicserver::install (
       # Mount CIC ISO
       debug('Mounting CIC ISO')
       exec {'mount-cic-iso': 
-        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m l:",
-        path     => $::path,
-        cwd      => $::system32,
-        creates  => 'l:/Installs/Install.exe',
-        timeout  => 30,
-        before   => Package['mediaserver'],
+        command => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m l:",
+        path    => $::path,
+        cwd     => $::system32,
+        creates => 'l:/Installs/Install.exe',
+        timeout => 30,
+        before  => Package['mediaserver'],
       }
 
       # Install Media Server
@@ -233,11 +238,55 @@ class cicserver::install (
         source          => "l:\\Installs\\Off-ServerComponents\\${mediaservermsi}",
         install_options => [
           '/l*v',
-          "c:\\windows\\logs\\mediaserver_${version}.log",
+          "c:\\windows\\logs\\${mediaservermsi}.log",
           {'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A'},
         ],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
+      }
+
+      # We don't need the ISO any more
+      debug('Unmounting CIC ISO')
+      exec {'unmount-cic-iso': 
+        command  => 'cmd.exe /c imdisk -D -m l:',
+        path     => $::path,
+        cwd      => $::system32,
+        timeout  => 30,
+        require  => Package['mediaserver'],
+      }
+
+      # Mount CIC Patch
+      debug('Mount latest patch')
+      exec {'mount-cic-latest-patch-iso': 
+        command  => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciclatestpatchiso}\" -m m:",
+        path     => $::path,
+        cwd      => $::system32,
+        creates  => 'm:/Installs/Install.exe',
+        timeout  => 30,
+        before   => Package['mediaserver-latest-patch'],
+      }
+
+      # Install Latest Patch
+      debug('Installing latest patch')
+      package {'mediaserver-latest-patch':
+        ensure          => installed,
+        source          => "m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsi}",
+        install_options => [
+          '/l*v',
+          "c:\\windows\\logs\\${mediaserverlatestpatchmsi}.log",
+        ],
+        provider        => 'windows',
+        require         => Package['mediaserver'],
+      }
+
+      # We don't need the ISO any more
+      debug('Unmounting CIC ISO')
+      exec {'unmount-cic-iso': 
+        command  => 'cmd.exe /c imdisk -D -m m:',
+        path     => $::path,
+        cwd      => $::system32,
+        timeout  => 30,
+        require  => Package['mediaserver-latest-patch'],
       }
 
       # ==============================
