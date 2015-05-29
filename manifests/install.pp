@@ -277,7 +277,7 @@ class cicserver::install (
           $parms += 'STARTEDBYEXEORIUPDATE=1'
           $parms += 'REBOOT=ReallySuppress'
           $parms += '/l*v'
-          $parms += \"C:\\Windows\\Logs\\icserver-patch-${Now}.log\"
+          $parms += \"C:\\Windows\\Logs\\${mediaserverlatestpatchmsp}.log\"
           $parms += '/qn'
           $parms += '/norestart'
           Start-Process -FilePath msiexec -ArgumentList $parms -Wait -Verbose
