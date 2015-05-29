@@ -286,14 +286,14 @@ class cicserver::install (
         ensure  => present,
         path    => "${cache_dir}\\patchmediaserver.ps1",
         content => "
-          $parms  = '/update',\"m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsp}\"
-          $parms += 'STARTEDBYEXEORIUPDATE=1'
-          $parms += 'REBOOT=ReallySuppress'
-          $parms += '/l*v'
-          $parms += \"C:\\Windows\\Logs\\${mediaserverlatestpatchmsp}.log\"
-          $parms += '/qn'
-          $parms += '/norestart'
-          Start-Process -FilePath msiexec -ArgumentList $parms -Wait -Verbose
+          \$parms  = '/update',\"m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsp}\"
+          \$parms += 'STARTEDBYEXEORIUPDATE=1'
+          \$parms += 'REBOOT=ReallySuppress'
+          \$parms += '/l*v'
+          \$parms += \"C:\\Windows\\Logs\\${mediaserverlatestpatchmsp}.log\"
+          \$parms += '/qn'
+          \$parms += '/norestart'
+          Start-Process -FilePath msiexec -ArgumentList \$parms -Wait -Verbose
         ",
         require => Package['mediaserver'],
       }
@@ -304,6 +304,7 @@ class cicserver::install (
         command  => "${cache_dir}\\patchmediaserver.ps1",
         provider => powershell,
         timeout  => 1800,
+        provider => powershell,
         require  => File['mediaserver-latest-patch-script'],
       }
 
