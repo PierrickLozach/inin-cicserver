@@ -304,7 +304,6 @@ class cicserver::install (
         command  => "${cache_dir}\\patchmediaserver.ps1",
         provider => powershell,
         timeout  => 1800,
-        provider => powershell,
         require  => File['mediaserver-latest-patch-script'],
       }
 
