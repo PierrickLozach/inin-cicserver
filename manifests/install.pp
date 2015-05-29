@@ -231,7 +231,11 @@ class cicserver::install (
       package {'mediaserver':
         ensure          => installed,
         source          => "l:\\Installs\\Off-ServerComponents\\${mediaservermsi}",
-        install_options => ['/qn', '/norestart', { 'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A' }],
+        install_options => [
+          '/l*v',
+          "c:\\windows\\logs\\mediaserver_${version}.log",
+          {'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A'},
+        ],
         provider        => 'windows',
         require         => Exec['setupassistant-run'],
       }
