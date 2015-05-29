@@ -1,5 +1,5 @@
 class {'cicserver::icsurvey':
-  path                  => 'c:/i3/ic/manifest/newsurvey.icsurvey',
+  path                  => 'C:/I3/IC/manifest/newsurvey.icsurvey',
   installnodomain       => true,
   organizationname      => 'organizationname',
   locationname          => 'locationname',
@@ -8,10 +8,10 @@ class {'cicserver::icsurvey':
   dbtablename           => 'I3_IC',
   dialplanlocalareacode => '317',
   emailfbmc             => true,
-  recordingspath        => 'c:\\I3\\IC\\Recordings',
-  sipnic                => 'Ethernet 2',
+  recordingspath        => 'C:/I3/IC/Recordings',
+  sipnic                => 'Ethernet',
   outboundaddress       => '3178723000',
   defaulticpassword     => '1234',
-  licensefile           => 'c:\\users\\vagrant\\desktop\\license.i3lic',
+  licensefile           => 'C:/vagrant-data/cic-license.i3lic',
   hostid                => '6300270E26DF',
 }
