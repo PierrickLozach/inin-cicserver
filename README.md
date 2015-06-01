@@ -1,5 +1,7 @@
 # cicserver::install & cicserver::icsurvey
 
+[![Coverage Status](https://coveralls.io/repos/PierrickI3/inin-cicserver/badge.svg)](https://coveralls.io/r/PierrickI3/inin-cicserver)
+
 #### Table of Contents
 
 1. [Overview](#overview)
