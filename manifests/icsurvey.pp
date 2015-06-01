@@ -133,8 +133,8 @@ class cicserver::icsurvey (
 
   file {'icsurvey':
     ensure      => present,
-        path    => $path,
-        content => template($template),
-    }
+    path    => $path,
+    content => template($template),
+  }
 
 }
