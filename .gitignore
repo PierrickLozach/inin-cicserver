@@ -15,4 +15,7 @@ tmtags
 ## VIM
 *.swp
 tags
+
+## RSPEC
+spec/fixtures
 pkg

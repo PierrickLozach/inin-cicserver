@@ -1,0 +1,13 @@
+language: ruby
+rvm:
+  - 2.0.0
+sudo: false
+env:
+  - PUPPET_VERSION=3.7.3
+script: "rake spec SPEC_OPTS='--format documentation'"
+gemfile: Gemfile
+matrix:
+  fast_finish: true
+notifications:
+  email:
+    - pierrick.lozach@inin.com
