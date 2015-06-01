@@ -99,6 +99,7 @@ class {'cicserver::icsurvey':
 	defaulticpassword		=> '1234',				# only valid for users created by ic setup assistant
 	licensefile				=> 'C:/I3/IC/iclicense.i3lic',
 	loggedonuserpassword 	=> 'vagrant',
+    template                => 'cicserver/DefaultSurvey.ICSurvey.erb',
 }
 ```
 

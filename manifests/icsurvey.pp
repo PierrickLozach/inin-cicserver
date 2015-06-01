@@ -49,6 +49,9 @@
 # [licensefile]
 #	Path to the .i3lic file
 #
+# [template]
+# Default path for the ICSurvey ERB template
+#
 # === Variables
 #
 # Here you should define a list of variables that this module would require.
@@ -72,11 +75,12 @@
 # 	dbtablename				    => 'I3_IC',
 # 	dialplanlocalareacode	=> '317',			
 # 	emailfbmc				      => true,
-# 	recordingspath			  => "C:\\I3\\IC\\Recordings",
+# 	recordingspath			  => 'C:/I3/IC/Recordings',
 # 	sipnic					      => 'Ethernet',
 # 	outboundaddress			  => '3178723000',
 # 	defaulticpassword		  => '1234',		
-# 	licensefile				    => "c:\\i3\\ic\\license.i3lic",	
+# 	licensefile				    => 'C:/I3/IC/license.i3lic',
+#   template              => 'cicserver/DefaultSurvey.ICSurvey.erb',
 #  }
 #
 # === Authors
@@ -88,7 +92,7 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 class cicserver::icsurvey (
-  $path                   = "C:\\I3\\IC\\Manifest\\newsurvey.icsurvey",
+  $path                   = 'C:/I3/IC/Manifest/newsurvey.icsurvey',
   $installnodomain        = true,
   $organizationname       = 'organizationname',
   $locationname           = 'locationname',
@@ -98,11 +102,12 @@ class cicserver::icsurvey (
   $dbtablename            = 'I3_IC',
   $dialplanlocalareacode  = '317',
   $emailfbmc              = false,
-  $recordingspath         = 'C:\\I3\\IC\\Recordings',
+  $recordingspath         = 'C:/I3/IC/Recordings',
   $sipnic                 = 'Ethernet',
   $outboundaddress        = '3178723000',
   $defaulticpassword      = '1234',
-  $licensefile            = 'C:\\I3\\IC\\iclicense.i3lic',
+  $licensefile            = 'C:/I3/IC/iclicense.i3lic',
+  $template               = 'cicserver/DefaultSurvey.ICSurvey.erb',
 ){
 
   require stdlib
@@ -129,7 +134,7 @@ class cicserver::icsurvey (
   file {'icsurvey':
     ensure      => present,
         path    => $path,
-        content => template('cicserver/DefaultSurvey.ICSurvey.erb'),
+        content => template($template),
     }
 
 }

@@ -166,6 +166,7 @@ class cicserver::install (
         defaulticpassword     => $defaulticpassword,
         licensefile           => $licensefile,
         before                => Exec['setupassistant-run'],
+        template              => 'cicserver/DefaultSurvey.ICSurvey.erb',
       }
 
       debug('Creating Setup Assistant powershell script...')
