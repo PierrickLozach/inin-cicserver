@@ -1,5 +1,7 @@
 # cicserver::install & cicserver::icsurvey
 
+[![Build Status](https://travis-ci.org/PierrickI3/inin-cicserver.svg?branch=master)](https://travis-ci.org/PierrickI3/inin-cicserver)
+
 [![Coverage Status](https://coveralls.io/repos/PierrickI3/inin-cicserver/badge.svg)](https://coveralls.io/r/PierrickI3/inin-cicserver)
 
 #### Table of Contents
