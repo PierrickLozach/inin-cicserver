@@ -370,13 +370,18 @@ class cicserver::install (
         require => Package['mediaserver'],
       }
 
-      # TODO Change filename based on number of CPU cores
-      debug('Downloading Media Server License')
-      download_file('mediaservertest_40_02cores_prod_vm.i3lic', "${daascache}\\Licenses\\MediaServer", $cache_dir, '', '')
+      # Get correct filename (based on the number of CPU cores)
+      $mediaservicelicensename = 'mediaservertest_40_01core_prod_vm.i3lic'
+      if $processorcount > 1 and $processorcount < 10 {
+        $mediaservicelicensename = "mediaservertest_40_0${cpu_cores}cores_prod_vm.i3lic"
+      }
+      else {
+        $mediaservicelicensename = "mediaservertest_40_${cpu_cores}cores_prod_vm.i3lic"
+      }
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
-        ensure             => file,
-        source             => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
+        ensure             => present,
+        source             => "${daascache}/Licenses/MediaServer/${mediaservicelicensename}",
         source_permissions => ignore,
       }
 
