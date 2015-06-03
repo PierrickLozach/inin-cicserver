@@ -10,13 +10,19 @@
 # [ensure]
 #   installed. No other values are currently supported.
 #
-# [organization]
+# [survey]
+#   location of survey file to be written.
+#
+# [installnodomain]
+#   set to true for a workgroup install (no AD).
+#
+# [organizationname]
 #   Interaction Center Organization Name.
 #
-# [location]
+# [locationname]
 #   Interaction Center location name.
 #
-# [site]
+# [sitename]
 #   Interaction Center Site Name.
 #
 # [dbreporttype]
@@ -45,6 +51,12 @@
 #
 # [defaulticpassword]
 #   Default IC user password. Defaults to 1234.
+#
+# [licensefile]
+#   Path to the CIC license file
+#
+# [loggedonuserpassword]
+#   Password of the user that will be used to install CIC. Used to set credentials for the Interaction Center windows service.
 #
 # === Examples
 #
