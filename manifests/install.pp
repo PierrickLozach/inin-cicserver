@@ -222,35 +222,6 @@ class cicserver::install (
         ],
       }
 
-      # Notifier Registry Fix
-      debug('Creating Powershell script to fix Notifier registry value if needed...')
-      file {"${cache_dir}\\FixNotifierRegistryValue.ps1":
-        ensure  => 'file',
-        owner   => 'Vagrant',
-        group   => 'Administrators',
-        content => "
-          \$NotifierRegPath = \"HKLM:\\SOFTWARE\\Wow6432Node\\Interactive Intelligence\\EIC\\Notifier\"
-          \$NotifierKey = \"NotifierServer\"
-
-          \$CurrentNotifierValue = (Get-ItemProperty -Path \$NotifierRegPath -Name \$NotifierKey).NotifierServer
-          if (\$CurrentNotifierValue -ne \$CurrentComputerName)
-          {
-              Write-Host \"Current Notifier registry value is not set properly. Fixing...\"
-              Set-ItemProperty -Path \$NotifierRegPath -Name \$NotifierKey -Value \$env:COMPUTERNAME
-          }
-        ",
-        before  => Exec['notifier-fix'],
-      }
-
-      debug('Fixing Notifier registry value if needed...')
-      exec {'notifier-fix':
-        command => "${cache_dir}\\FixNotifierRegistryValue.ps1",
-        provider => powershell,
-        timeout  => 3600,
-        require  => Exec['setupassistant-run'],
-        before   => Service['cicserver-service-start'],
-      }
-
       debug('Starting Interaction Center')
       service {'cicserver-service-start':
         ensure  => running,
@@ -345,6 +316,34 @@ class cicserver::install (
         path     => $::path,
         cwd      => $::system32,
         timeout  => 30,
+        require  => Exec['mediaserver-latest-patch-run'],
+      }
+
+      # Notifier Registry Fix
+      debug('Creating Powershell script to fix Notifier registry value if needed...')
+      file {"${cache_dir}\\FixNotifierRegistryValue.ps1":
+        ensure  => 'file',
+        owner   => 'Vagrant',
+        group   => 'Administrators',
+        content => "
+          \$NotifierRegPath = \"HKLM:\\SOFTWARE\\Wow6432Node\\Interactive Intelligence\\EIC\\Notifier\"
+          \$NotifierKey = \"NotifierServer\"
+
+          \$CurrentNotifierValue = (Get-ItemProperty -Path \$NotifierRegPath -Name \$NotifierKey).NotifierServer
+          if (\$CurrentNotifierValue -ne \$CurrentComputerName)
+          {
+              Write-Host \"Current Notifier registry value is not set properly. Fixing...\"
+              Set-ItemProperty -Path \$NotifierRegPath -Name \$NotifierKey -Value \$env:COMPUTERNAME
+          }
+        ",
+        before  => Exec['notifier-fix'],
+      }
+
+      debug('Fixing Notifier registry value if needed...')
+      exec {'notifier-fix':
+        command => "${cache_dir}\\FixNotifierRegistryValue.ps1",
+        provider => powershell,
+        timeout  => 3600,
         require  => Exec['mediaserver-latest-patch-run'],
       }
 
