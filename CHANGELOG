@@ -29,3 +29,4 @@
 2015-05-29: Added support for CIC 2015 R3
 2015-05-29: Also installing R3 Patch 2
 2015-06-01: Moved template to a parameter
+2015-06-03: Adding temporary fix to set the Notifier value correctly
