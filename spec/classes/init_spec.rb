@@ -25,13 +25,17 @@ describe 'cicserver::icsurvey' do
     end
   end
 
-  context 'should take care of Windows before starting' do
-    it { should contain_exec('disable-automatic-maintenance') } # Turn off Windows maintenance before running MSIs
-  end
-
   context 'should create survey' do
     it { should contain_file('C:\\\\I3\\\\IC\\\\Manifest') }
-  	it { should contain_file('icsurvey') }
+    it { should contain_file('icsurvey') }
+  end
+
+end
+
+describe 'cicserver::install' do
+
+  context 'should take care of Windows before starting' do
+    it { should contain_exec('disable-automatic-maintenance') } # Turn off Windows maintenance before running MSIs
   end
 
   context 'should configure CIC' do
