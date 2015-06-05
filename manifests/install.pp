@@ -234,6 +234,15 @@ class cicserver::install (
         ],
       }
 
+      debug('Fixing Setup Assistant bug (registry contains old machine name even after Setup Assistant runs)')
+      exec {'registry-fix':
+        command => 'C:/vagrant/daas/shell/cic-server-name-registry-fix.ps1',
+        provider => powershell,
+        timeout  => 300,
+        require  => Exec['setupassistant-run'],
+        before   => Service['cicserver-service-start'],
+      }
+
       debug('Starting Interaction Center')
       service {'cicserver-service-start':
         ensure  => running,
@@ -331,34 +340,6 @@ class cicserver::install (
         require  => Exec['mediaserver-latest-patch-run'],
       }
 
-      # Notifier Registry Fix
-      debug('Creating Powershell script to fix Notifier registry value if needed...')
-      file {"${cache_dir}\\FixNotifierRegistryValue.ps1":
-        ensure  => 'file',
-        owner   => 'Vagrant',
-        group   => 'Administrators',
-        content => "
-          \$NotifierRegPath = \"HKLM:\\SOFTWARE\\Wow6432Node\\Interactive Intelligence\\EIC\\Notifier\"
-          \$NotifierKey = \"NotifierServer\"
-
-          \$CurrentNotifierValue = (Get-ItemProperty -Path \$NotifierRegPath -Name \$NotifierKey).NotifierServer
-          if (\$CurrentNotifierValue -ne \$CurrentComputerName)
-          {
-              Write-Host \"Current Notifier registry value is not set properly. Fixing...\"
-              Set-ItemProperty -Path \$NotifierRegPath -Name \$NotifierKey -Value \$env:COMPUTERNAME
-          }
-        ",
-        before  => Exec['notifier-fix'],
-      }
-
-      debug('Fixing Notifier registry value if needed...')
-      exec {'notifier-fix':
-        command => "${cache_dir}\\FixNotifierRegistryValue.ps1",
-        provider => powershell,
-        timeout  => 3600,
-        require  => Exec['mediaserver-latest-patch-run'],
-      }
-
       # ==============================
       # -= Configuring Media Server =-
       # ==============================
@@ -370,18 +351,13 @@ class cicserver::install (
         require => Package['mediaserver'],
       }
 
-      # Get correct filename (based on the number of CPU cores)
-      $mediaservicelicensename = 'mediaservertest_40_01core_prod_vm.i3lic'
-      if $processorcount > 1 and $processorcount < 10 {
-        $mediaservicelicensename = "mediaservertest_40_0${cpu_cores}cores_prod_vm.i3lic"
-      }
-      else {
-        $mediaservicelicensename = "mediaservertest_40_${cpu_cores}cores_prod_vm.i3lic"
-      }
+      # TODO Change filename based on number of CPU cores 
+      debug('Downloading Media Server License')
+      download_file('mediaservertest_40_02cores_prod_vm.i3lic', "${daascache}\\Licenses\\MediaServer", $cache_dir, '', '')
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
-        ensure             => present,
-        source             => "${daascache}/Licenses/MediaServer/${mediaservicelicensename}",
+        ensure             => file,   
+        source             => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
         source_permissions => ignore,
       }
 
