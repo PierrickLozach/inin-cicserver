@@ -357,7 +357,7 @@ class cicserver::install (
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
         ensure             => file,   
-        source             => "file:///${cache_dir}/mediaservertest_40_02cores_prod_vm.i3lic",
+        source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", # processor_cores comes from a custom fact
         source_permissions => ignore,
       }
 
