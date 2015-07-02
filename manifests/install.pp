@@ -154,6 +154,7 @@ class cicserver::install (
         cwd      => $::system32,
         timeout  => 30,
         provider => powershell,
+        returns  => [0,1],
         before   => Class['cicserver::icsurvey'],
       }
 
