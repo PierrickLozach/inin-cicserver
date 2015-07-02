@@ -354,7 +354,7 @@ class cicserver::install (
 
       # TODO Change filename based on number of CPU cores 
       debug('Downloading Media Server License')
-      download_file('mediaservertest_40_02cores_prod_vm.i3lic', "${daascache}\\Licenses\\MediaServer", $cache_dir, '', '')
+      download_file("mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", "${daascache}\\Licenses\\MediaServer", $cache_dir, '', '')
 
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
         ensure             => file,   
