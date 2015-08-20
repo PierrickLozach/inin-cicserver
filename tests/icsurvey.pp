@@ -13,6 +13,5 @@ class {'cicserver::icsurvey':
   outboundaddress       => '3178723000',
   defaulticpassword     => '1234',
   licensefile           => 'C:/vagrant-data/cic-license.i3lic',
-  hostid                => '6300270E26DF',
   template              => 'cicserver/DefaultSurvey.ICSurvey.erb',
 }
