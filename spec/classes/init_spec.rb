@@ -31,6 +31,18 @@ describe 'cicserver::icsurvey' do
 
 end
 
+describe 'cicserver::user' do
+
+  context 'with defaults for all parameters' do
+    it { should contain_class('cicserver::user') }
+  end
+
+  context 'should call a powershell script' do
+    it { should contain_exec('create-ic-user') }
+  end
+
+end
+
 # Disabling cicserver::install tests for now until I can test the download_file function correctly
 =begin
 describe 'cicserver::install' do
