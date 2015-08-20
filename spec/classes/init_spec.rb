@@ -32,12 +32,14 @@ describe 'cicserver::icsurvey' do
 end
 
 describe 'cicserver::user' do
-
+  
+  let(:facts) {{ :operatingsystem => 'Windows' }}
+  
   context 'username is required' do
     it do
       expect {
         should contain_class('cicserver::user') 
-      }.to raise_error(Puppet::Error, /Must pass username to Class[Cicserver::User]/)
+      }.to raise_error(Puppet::Error, /Must pass username/)
     end
   end
 
