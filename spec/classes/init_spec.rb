@@ -33,11 +33,16 @@ end
 
 describe 'cicserver::user' do
 
-  context 'with defaults for all parameters' do
-    it { should contain_class('cicserver::user') }
+  context 'username is required' do
+    it do
+      expect {
+        should contain_class('cicserver::user') 
+      }.to raise_error(Puppet::Error, /Must pass username to Class[Cicserver::User]./)
+    end
   end
 
   context 'should call a powershell script' do
+    let(:params) {{ :username => 'aCICUser' }}
     it { should contain_exec('create-ic-user') }
   end
 
