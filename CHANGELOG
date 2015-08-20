@@ -32,3 +32,4 @@
 2015-06-03: Adding temporary fix to set the Notifier value correctly
 2015-06-05: Renaming all registry entries that contain old server names before Setup Assistant starts
 2015-07-01: Added CPU core check for media server license
+2015-08-20: Added cicserver::user to create CIC users
