@@ -1,0 +1,3 @@
+Import-Module .\Posh-IC.psm1
+$cic = New-ICSession -ICServer "<%= @cicserver %>" -User "<%= @cicadminusername %>" -Password "<%= @cicadminpassword %>"
+New-ICWorkgroup $cic -Workgroup "<%= workgroupname %>" -Extension "<%= extension %>" -Members "<%= members %>"
