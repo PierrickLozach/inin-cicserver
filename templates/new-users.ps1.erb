@@ -1,0 +1,7 @@
+pwd
+Write-Output 'Importing module...'
+Import-Module .\Posh-IC.psm1
+Write-Output 'Finished importing module. Creating CIC session...'
+$cic = New-ICSession -ICServer "<%= @cicserver %>" -User "<%= @cicadminusername %>" -Password "<%= @cicadminpassword %>"
+Write-Output 'Finished creating CIC session. Importing users...'
+New-ICUsers $cic -ICUsers '<%= @cicuserdata.to_json %>'

@@ -34,3 +34,4 @@
 2015-07-01: Added CPU core check for media server license
 2015-08-20: Added cicserver::user to create CIC users
 2015-08-21: Added cicserver::workgroup to create CIC workgroups
+2015-08-21: Added cicserver::users to create multiple CIC users at once
