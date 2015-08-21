@@ -50,7 +50,7 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 
-class cicserver::user (
+class cicserver::workgroup (
   $ensure = installed,
   $workgroupname,
   $extension,

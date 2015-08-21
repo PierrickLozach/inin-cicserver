@@ -60,7 +60,7 @@ describe 'cicserver::workgroup' do
   context 'workgroupname is required' do
     it do
       expect {
-        should contain_class('cicserver::workgroupname') 
+        should contain_class('cicserver::workgroup') 
       }.to raise_error(Puppet::Error, /Must pass workgroupname/)
     end
   end
@@ -128,7 +128,6 @@ describe 'cicserver::install' do
     it { should contain_exec('ININMediaServer-Start') } # Start the service
     it { should contain_file('mediaserver-pairing') } # Create a powershell script to pair media server with CIC
     it { should contain_exec('mediaserver-pair-cic') } # Run the powershell script
-
   end
 
 end
