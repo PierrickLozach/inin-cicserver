@@ -28,7 +28,6 @@ describe 'cicserver::icsurvey' do
   context 'should create survey' do
     it { should contain_file('icsurvey') }
   end
-
 end
 
 describe 'cicserver::user' do
@@ -52,7 +51,30 @@ describe 'cicserver::user' do
     }}
     it { should contain_exec('create-ic-user') }
   end
+end
 
+describe 'cicserver::workgroup' do
+  
+  let(:facts) {{ :operatingsystem => 'Windows' }}
+  
+  context 'workgroupname is required' do
+    it do
+      expect {
+        should contain_class('cicserver::workgroupname') 
+      }.to raise_error(Puppet::Error, /Must pass workgroupname/)
+    end
+  end
+
+  context 'should call a powershell script' do
+    let(:params) {{ 
+      :workgroupname    => 'aCICUser',
+      :extension        => 8001,
+      :members          => ['testuser1', 'testuser2'],
+      :cicadminusername => 'cicadmin',
+      :cicadminpassword => 'strong password',
+    }}
+    it { should contain_exec('create-ic-workgroup') }
+  end
 end
 
 # Disabling cicserver::install tests for now until I can test the download_file function correctly
