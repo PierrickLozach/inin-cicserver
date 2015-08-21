@@ -120,6 +120,19 @@ class {'cicserver::user':
 }
 ```
 
+```puppet
+class {'cicserver::workgroup':
+  ensure           => installed,
+  workgroupname    => 'testworkgroup1', # The name for the new CIC workgroup
+  extension        => 8001,
+  members          => ['testuser1', 'testuser2']
+  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
+  cicadminusername => 'vagrant',   # CIC user with administrative priviledges
+  cicadminpassword => '1234',
+  cicserver        => 'testregfr', # your CIC server name
+}
+```
+
 ## Reference
 
 Here, list the classes, types, providers, facts, etc contained in your module.
