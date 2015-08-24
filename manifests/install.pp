@@ -147,9 +147,20 @@ class cicserver::install (
       # -= Disable Automatic Maintenance =-
       # ===================================
 
-      debug('Disable Automatic Maintenance')
-      exec {'disable-automatic-maintenance':
-        command  => 'psexec -accepteula -s schtasks /change /tn "\Microsoft\Windows\TaskScheduler\Maintenance Configurator" /DISABLE',
+      debug('Disable Regular Maintenance')
+      exec {'disable-regular-maintenance':
+        command  => 'psexec -accepteula -s schtasks /change /tn "\Microsoft\Windows\TaskScheduler\Regular Maintenance" /DISABLE',
+        path     => $::path,
+        cwd      => $::system32,
+        timeout  => 30,
+        provider => powershell,
+        returns  => [0,1],
+        before   => Class['cicserver::icsurvey'],
+      }
+
+      debug('Disable Idle Maintenance')
+      exec {'disable-idle-maintenance':
+        command  => 'psexec -accepteula -s schtasks /change /tn "\Microsoft\Windows\TaskScheduler\Idle Maintenance" /DISABLE',
         path     => $::path,
         cwd      => $::system32,
         timeout  => 30,
