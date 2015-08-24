@@ -35,3 +35,4 @@
 2015-08-20: Added cicserver::user to create CIC users
 2015-08-21: Added cicserver::workgroup to create CIC workgroups
 2015-08-21: Added cicserver::users to create multiple CIC users at once
+2015-08-24: Disable regular and idle windows maintenance scheduled tasks
