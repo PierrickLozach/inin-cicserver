@@ -1,20 +1,21 @@
-# == Class: cicserver::users
+# == Class: cicserver::workgroups
 #
-# Creates users using Powershell and the ICWS API
+# Creates workgroups using Powershell and the ICWS API
 #
 # === Parameters
 #
 # [ensure]
-#   installed. User will be created. No other values are currently supported.
+#   installed. Workgroup will be created. No other values are currently supported.
 #
-# [cicuserdata]
-#   Hash of CIC users with the following format:
+# [cicworkgroupdata]
+#   Hash of CIC workgroups with the following format:
+#     {'unique identifier':{'workgroupname:':'testworkgroup1','extension':'6001'}, 'also a unique id':{'workgroupname:':'testworkgroup2','extension':'6002'}}
 #
 # [pathtoscripts]
 #   Path to the powershell scripts to communicate with the ICWS API. Scripts are available here: https://github.com/PierrickI3/posh-ic
 #
 # [cicadminusername]
-#   CIC user with administrative priviledges to create/delete CIC users.
+#   CIC user with administrative priviledges to create/delete CIC workgroups.
 #
 # [cicadminpassword]
 #   CIC Admin password.
@@ -24,9 +25,9 @@
 #
 # === Examples
 #
-#  class {'cicserver::users':
+#  class {'cicserver::workgroups':
 #   ensure           => installed,
-#   cicuserdata      => '{'sdfkjsdkfj':{'username':'testuser1', 'password':'1234', 'extension':'8001'},'dgr3vsdv':{'username':'testuser2', 'password':'5678', 'extension':'8002'}},
+#   cicworkgroupdata      => '{'asdsadg':{'workgroupname:':'testworkgroup1','extension':'6001'}, 'asdasdfgrf':{'workgroupname:':'testworkgroup2','extension':'6002'}}',
 #   pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/',
 #   cicadminusername => 'vagrant',
 #   cicadminpassword => 'vagrant',
@@ -42,9 +43,9 @@
 # Copyright 2015, Interactive Intelligence Inc.
 #
 
-class cicserver::users (
+class cicserver::workgroups (
   $ensure = installed,
-  $cicuserdata,
+  $cicworkgroupdata,
   $pathtoscripts = 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib/',
   $cicadminusername,
   $cicadminpassword,
@@ -62,13 +63,13 @@ class cicserver::users (
   {
     installed:
     {
-      $cicusers = convert_to_json($cicuserdata)
+      $cicworkgroups = convert_to_json($cicworkgroupdata)
 
-      notify { "Creating users: ${cicuserdata}":}
-      notify { "Creating users (json): ${cicusers}":}
+      notify { "Creating workgroups: ${cicworkgroupdata}":}
+      notify { "Creating workgroups (json): ${cicworkgroups}":}
 
-      exec { 'create-ic-users':
-        command   => template('cicserver/new-users.ps1.erb'),
+      exec { 'create-ic-workgroups':
+        command   => template('cicserver/new-workgroups.ps1.erb'),
         path      => $pathtoscripts,
         cwd       => $pathtoscripts,
         timeout   => 30,
@@ -78,7 +79,7 @@ class cicserver::users (
     }
     absent:
     {
-      debug('Deleting CIC user')
+      debug('Deleting CIC workgroup')
     }
     default:
     {
