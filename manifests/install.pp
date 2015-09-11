@@ -109,15 +109,13 @@ class cicserver::install (
   $loggedonuserpassword,
 )
 {
-
   $daascache                        = 'C:/daas-cache/'
-  $currentversion                   = '2015_R3'
-  $latestpatch                      = 'Patch2'
 
-  $ciciso                           = "CIC_${currentversion}.iso"
-  $ciclatestpatchiso                = "CIC_${currentversion}_${latestpatch}.iso"
-  $mediaservermsi                   = "MediaServer_${currentversion}.msi"
-  $mediaserverlatestpatchmsp        = "MediaServer_${currentversion}_${latestpatch}.msp"
+  $ciciso                           = latest_version($daascache, 'CIC_[0-9]*_R?.iso')
+  $ciclatestpatchiso                = latest_version($daascache, 'CIC_[0-9]*_R?_Patch?.iso')
+
+  $mediaservermsi                   = latest_version($daascache, 'MediaServer_[0-9]*_R?.msi')
+  $mediaserverlatestpatchmsp        = latest_version($daascache, 'MediaServer_[0-9]*_R?_Patch?.msp')
 
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
