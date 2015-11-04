@@ -3,7 +3,9 @@
 # Installs CIC, Interaction Firmware and Media Server then pairs 
 # the Media server with the CIC server. All silently.
 # CIC ISO (i.e. CIC_2015_R2.iso) should be in a shared folder 
-# linked to C:\daas-cache
+# linked to C:\daas-cache.
+# This script will install media server using the latest version 
+# available on disk
 #
 # === Parameters
 #
@@ -111,12 +113,6 @@ class cicserver::install (
 {
   $daascache                        = 'C:/daas-cache/'
 
-  $ciciso                           = latest_version($daascache, 'CIC_[0-9]*_R?.iso')
-  $ciclatestpatchiso                = latest_version($daascache, 'CIC_[0-9]*_R?_Patch?.iso')
-
-  $mediaservermsi                   = latest_version($daascache, 'MediaServer_[0-9]*_R?.msi')
-  $mediaserverlatestpatchmsp        = latest_version($daascache, 'MediaServer_[0-9]*_R?_Patch?.msp')
-
   $server                           = $::hostname
   $mediaserverregistrationurl       = "https://${server}/config/servers/add/postback"
   $mediaserverregistrationnewdata   = "NotifierHost=${server}&NotifierUserId=vagrant&NotifierPassword=1234&AcceptSessions=true&PropertyCopySrc=&_Command=Add"
@@ -145,7 +141,6 @@ class cicserver::install (
       # -= Disable Automatic Maintenance =-
       # ===================================
 
-      debug('Disable Regular Maintenance')
       exec {'disable-regular-maintenance':
         command  => 'psexec -accepteula -s schtasks /change /tn "\Microsoft\Windows\TaskScheduler\Regular Maintenance" /DISABLE',
         path     => $::path,
@@ -156,7 +151,6 @@ class cicserver::install (
         before   => Class['cicserver::icsurvey'],
       }
 
-      debug('Disable Idle Maintenance')
       exec {'disable-idle-maintenance':
         command  => 'psexec -accepteula -s schtasks /change /tn "\Microsoft\Windows\TaskScheduler\Idle Maintenance" /DISABLE',
         path     => $::path,
@@ -171,7 +165,7 @@ class cicserver::install (
       # -= Setup Assistant =-
       # =====================
 
-      debug('Creating ICSurvey file...')
+      # Create IC Survey file to run Setup Assistant remotely
       class {'cicserver::icsurvey':
         path                  => $survey, # TODO Probably needs to move/generate this somewhere else
         installnodomain       => $installnodomain,
@@ -191,7 +185,7 @@ class cicserver::install (
         template              => 'cicserver/DefaultSurvey.ICSurvey.erb',
       }
 
-      debug('Creating Setup Assistant powershell script...')
+      # Create script to run Setup Assistant
       file {"${cache_dir}\\RunSetupAssistant.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
@@ -229,7 +223,7 @@ class cicserver::install (
         ",
       }
 
-      debug('Running setup assistant')
+      # Run Setup Assistant script
       exec {'setupassistant-run':
         command => "${cache_dir}\\RunSetupAssistant.ps1",
         onlyif  => [
@@ -244,7 +238,7 @@ class cicserver::install (
         ],
       }
 
-      debug('Fixing Setup Assistant bug (registry contains old machine name even after Setup Assistant runs)')
+      # Apply registry fix to fix notifier name
       exec {'registry-fix':
         command => 'C:/vagrant/daas/shell/cic-server-name-registry-fix.ps1',
         provider => powershell,
@@ -253,13 +247,12 @@ class cicserver::install (
         before   => Service['cicserver-service-start'],
       }
 
-      debug('Starting Interaction Center')
+      # Start CIC service
       service {'cicserver-service-start':
         ensure  => running,
         enable  => true,
         name    => 'Interaction Center',
         require => Exec['setupassistant-run'],
-        before  => Package['mediaserver'],
       }
 
       # ==========================
@@ -267,81 +260,76 @@ class cicserver::install (
       # ==========================
 
       # Mount CIC ISO
-      debug('Mounting CIC ISO')
       exec {'mount-cic-iso': 
-        command => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciciso}\" -m l:",
+        command => "cmd.exe /c imdisk -a -f \"${daascache}\\CIC_${::cic_installed_major_version}_R${::cic_installed_release}.iso\" -m l:",
         path    => $::path,
         cwd     => $::system32,
         creates => 'l:/Installs/Install.exe',
         timeout => 30,
-        before  => Package['mediaserver'],
+        require => Service['cicserver-service-start'],
       }
 
       # Install Media Server
-      debug('Installing Media Server')
-      package {'mediaserver':
+      package {'install-media-server':
         ensure          => installed,
-        source          => "l:\\Installs\\Off-ServerComponents\\${mediaservermsi}",
+        source          => "L:/Installs/Off-ServerComponents/MediaServer_${::cic_installed_major_version}_R${::cic_installed_release}.msi",
         install_options => [
           '/l*v',
-          "c:\\windows\\logs\\${mediaservermsi}.log",
+          'c:\\windows\\logs\\mediaserver.log',
           {'MEDIASERVER_ADMINPASSWORD_ENCRYPTED' => 'CA1E4FED70D14679362C37DF14F7C88A'},
         ],
         provider        => 'windows',
-        require         => Exec['setupassistant-run'],
+        require         => Exec['mount-cic-iso'],
       }
 
       # We don't need the ISO any more
-      debug('Unmounting CIC ISO')
       exec {'unmount-cic-iso': 
         command  => 'cmd.exe /c imdisk -D -m l:',
         path     => $::path,
         cwd      => $::system32,
         timeout  => 30,
-        require  => Package['mediaserver'],
+        require  => Package['install-media-server'],
       }
 
-      # Mount CIC Patch
-      debug('Mount latest patch ISO')
+      # Mount CIC Patch ISO
       exec {'mount-cic-latest-patch-iso':
-        command => "cmd.exe /c imdisk -a -f \"${daascache}\\${ciclatestpatchiso}\" -m m:",
+        command => "cmd.exe /c imdisk -a -f \"${daascache}\\CIC_${::cic_installed_major_version}_R${::cic_installed_release}_Patch${::cic_installed_patch}.iso\" -m m:",
         path    => $::path,
         cwd     => $::system32,
         creates => 'm:/Installs/Install.exe',
         timeout => 30,
-        before  => Exec['mediaserver-latest-patch-run'],
-        require => Package['mediaserver'],
+        require => Package['install-media-server'],
       }
 
       # Create script to install Latest Patch since puppet does not know how to run MSPs (will be fixed in 4.x: https://tickets.puppetlabs.com/browse/PUP-395)
-      debug('Creating script to install Media server patch')
       file {'mediaserver-latest-patch-script':
         ensure  => present,
         path    => "${cache_dir}\\patchmediaserver.ps1",
         content => "
-          \$parms  = '/update',\"m:\\Installs\\Off-ServerComponents\\${mediaserverlatestpatchmsp}\"
+          \$parms  = '/update',\"m:\\Installs\\Off-ServerComponents\\MediaServer_${::cic_installed_major_version}_R${::cic_installed_release}_Patch${::cic_installed_patch}.msp\"
           \$parms += 'STARTEDBYEXEORIUPDATE=1'
           \$parms += 'REBOOT=ReallySuppress'
           \$parms += '/l*v'
-          \$parms += \"C:\\Windows\\Logs\\${mediaserverlatestpatchmsp}.log\"
+          \$parms += \"C:\\Windows\\Logs\\mediaserverpatch.log\"
           \$parms += '/qn'
           \$parms += '/norestart'
           Start-Process -FilePath msiexec -ArgumentList \$parms -Wait -Verbose
         ",
-        require => Package['mediaserver'],
+        require => Package['install-media-server'],
       }
 
-      # Install Latest Patch
-      debug('Install Media server patch')
+      # Install Media Server Latest Patch
       exec {'mediaserver-latest-patch-run':
         command  => "${cache_dir}\\patchmediaserver.ps1",
         provider => powershell,
         timeout  => 1800,
-        require  => File['mediaserver-latest-patch-script'],
+        require  => [
+          File['mediaserver-latest-patch-script'],
+          Exec['mount-cic-latest-patch-iso'],
+        ],
       }
 
-      # We don't need the ISO any more
-      debug('Unmounting CIC ISO')
+      # We don't need the ISO any more. Unmount it.
       exec {'unmount-cic-latest-patch-iso':
         command  => 'cmd.exe /c imdisk -D -m m:',
         path     => $::path,
@@ -354,35 +342,39 @@ class cicserver::install (
       # -= Configuring Media Server =-
       # ==============================
 
-      debug('Setting web config login password')
+      # Setting web config login password
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
         type    => string,
         data    => 'CA1E4FED70D14679362C37DF14F7C88A',
-        require => Package['mediaserver'],
+        require => Package['install-media-server'],
       }
 
-      # TODO Change filename based on number of CPU cores 
-      debug('Downloading Media Server License')
-      download_file("mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", "${daascache}\\Licenses\\MediaServer", $cache_dir, '', '')
+      # Downloading Media Server License
+      if ($processor_cores == '01') {
+        download_file("mediaservertest_40_${processor_cores}core_prod_vm.i3lic", "${daascache}Licenses/MediaServer", $cache_dir, '', '')
+      } else {
+        download_file("mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", "${daascache}Licenses/MediaServer", $cache_dir, '', '')
+      }
 
+      # Create Media Server License file
       file { 'c:/i3/ic/mediaserverlicense.i3lic':
         ensure             => file,   
         source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", # processor_cores comes from a custom fact
         source_permissions => ignore,
       }
 
-      debug('Installing Media Server license')
+      # Installing Media Server license
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type    => string,
         data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
         require => [
-          Package['mediaserver'],
+          Package['install-media-server'],
           File['c:/i3/ic/mediaserverlicense.i3lic'],
         ],
         before  => Exec['ININMediaServer-Start'],
       }
 
-      debug('Creating powershell script to start Media Server service')
+      # Creating powershell script to start Media Server service
       file {"${cache_dir}\\StartMediaServerService.ps1":
         ensure  => 'file',
         owner   => 'Vagrant',
@@ -404,17 +396,17 @@ class cicserver::install (
         ",
       }
 
-      debug('Starting Media Server')
+      # Start Media Server
       exec {'ININMediaServer-Start' :
         command  => "${cache_dir}\\StartMediaServerService.ps1",
         provider => powershell,
         require  => [
-          Package['mediaserver'],
+          Package['install-media-server'],
           Exec['mediaserver-latest-patch-run'],
         ],
       }
       
-      debug('Creating script to pair CIC and Media server')
+      # Creating script to pair CIC and Media server
       file {'mediaserver-pairing':
         ensure  => present,
         path    => "${cache_dir}\\mediaserverpairing.ps1",
@@ -487,7 +479,7 @@ class cicserver::install (
         require => Exec['ININMediaServer-Start'],
       }
 
-      debug('Pairing CIC and Media server')
+      # Pairing CIC and Media server
       exec {'mediaserver-pair-cic':
         command  => "${cache_dir}\\mediaserverpairing.ps1",
         provider => powershell,
@@ -495,10 +487,6 @@ class cicserver::install (
         require  => File['mediaserver-pairing'],
       }
 
-    }
-    uninstalled:
-    {
-      debug('Uninstalling CIC server')
     }
     default:
     {
