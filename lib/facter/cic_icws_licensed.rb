@@ -23,6 +23,6 @@ Facter.add(:cic_icws_licensed) do
   setcode do
     require 'win32/registry'
     cic_site_name = readkey('SOFTWARE\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root', 'SITE')
-    cic_icws_licensed = key_exists?('SOFTWARE\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root' + cic_site_name[0] + '\Production\Licenses\I3_FEATURE_ICWS_SDK')
+    cic_icws_licensed = key_exists?('SOFTWARE\Wow6432Node\Interactive Intelligence\EIC\Directory Services\Root\\' + cic_site_name[0] + '\Production\Licenses\I3_FEATURE_ICWS_SDK')
   end
 end
