@@ -351,17 +351,27 @@ class cicserver::install (
 
       # Downloading Media Server License
       if ($processor_cores == '01') {
+        
         download_file("mediaservertest_40_${processor_cores}core_prod_vm.i3lic", "${daascache}Licenses/MediaServer", $cache_dir, '', '')
+        
+        # Create Media Server License file for a single core
+        file { 'c:/i3/ic/mediaserverlicense.i3lic':
+          ensure             => file,   
+          source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}core_prod_vm.i3lic",
+          source_permissions => ignore,
+        }
       } else {
+        
         download_file("mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", "${daascache}Licenses/MediaServer", $cache_dir, '', '')
+        
+        # Create Media Server License file for multiple cores
+        file { 'c:/i3/ic/mediaserverlicense.i3lic':
+          ensure             => file,   
+          source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}cores_prod_vm.i3lic",
+          source_permissions => ignore,
+        }
       }
 
-      # Create Media Server License file
-      file { 'c:/i3/ic/mediaserverlicense.i3lic':
-        ensure             => file,   
-        source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", # processor_cores comes from a custom fact
-        source_permissions => ignore,
-      }
 
       # Installing Media Server license
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
