@@ -1,10 +1,10 @@
 # == Class: cicserver::install
 #
-# Installs CIC, Interaction Firmware and Media Server then pairs 
+# Installs CIC, Interaction Firmware and Media Server then pairs
 # the Media server with the CIC server. All silently.
-# CIC ISO (i.e. CIC_2015_R2.iso) should be in a shared folder 
+# CIC ISO (i.e. CIC_2015_R2.iso) should be in a shared folder
 # linked to C:\daas-cache.
-# This script will install media server using the latest version 
+# This script will install media server using the latest version
 # available on disk
 #
 # === Parameters
@@ -260,8 +260,8 @@ class cicserver::install (
       # ==========================
 
       # Mount CIC ISO
-      exec {'mount-cic-iso': 
-        command => "cmd.exe /c imdisk -a -f \"${daascache}\\CIC_${::cic_installed_major_version}_R${::cic_installed_release}.iso\" -m l:",
+      exec {'mount-cic-iso':
+        command => "cmd.exe /c imdisk -a -f \"${daascache}\\${::cic_latest_version}\" -m l:",
         path    => $::path,
         cwd     => $::system32,
         creates => 'l:/Installs/Install.exe',
@@ -283,7 +283,7 @@ class cicserver::install (
       }
 
       # We don't need the ISO any more
-      exec {'unmount-cic-iso': 
+      exec {'unmount-cic-iso':
         command  => 'cmd.exe /c imdisk -D -m l:',
         path     => $::path,
         cwd      => $::system32,
@@ -351,22 +351,22 @@ class cicserver::install (
 
       # Downloading Media Server License
       if ($processor_cores == '01') {
-        
+
         download_file("mediaservertest_40_${processor_cores}core_prod_vm.i3lic", "${daascache}Licenses/MediaServer", $cache_dir, '', '')
-        
+
         # Create Media Server License file for a single core
         file { 'c:/i3/ic/mediaserverlicense.i3lic':
-          ensure             => file,   
+          ensure             => file,
           source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}core_prod_vm.i3lic",
           source_permissions => ignore,
         }
       } else {
-        
+
         download_file("mediaservertest_40_${processor_cores}cores_prod_vm.i3lic", "${daascache}Licenses/MediaServer", $cache_dir, '', '')
-        
+
         # Create Media Server License file for multiple cores
         file { 'c:/i3/ic/mediaserverlicense.i3lic':
-          ensure             => file,   
+          ensure             => file,
           source             => "file:///${cache_dir}/mediaservertest_40_${processor_cores}cores_prod_vm.i3lic",
           source_permissions => ignore,
         }
@@ -415,7 +415,7 @@ class cicserver::install (
           Exec['mediaserver-latest-patch-run'],
         ],
       }
-      
+
       # Creating script to pair CIC and Media server
       file {'mediaserver-pairing':
         ensure  => present,
