@@ -292,7 +292,7 @@ class cicserver::install (
       }
 
       # Mount CIC Patch ISO
-      if ($::cic_installed_patch) {
+      if ($::cic_installed_patch != '0') {
         # A patch was installed. We need to update media server to the latest patch available
         exec {'mount-cic-latest-patch-iso':
           command => "cmd.exe /c imdisk -a -f \"${daascache}\\CIC_${::cic_installed_major_version}_R${::cic_installed_release}_Patch${::cic_installed_patch}.iso\" -m m:",
@@ -411,7 +411,7 @@ class cicserver::install (
       }
 
       # Start Media Server
-      if ($::cic_installed_patch) {
+      if ($::cic_installed_patch != '0') {
         exec {'ININMediaServer-Start' :
           command  => "${cache_dir}\\StartMediaServerService.ps1",
           provider => powershell,
