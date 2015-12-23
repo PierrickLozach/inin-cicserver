@@ -347,7 +347,7 @@ class cicserver::install (
       # ==============================
 
       # Setting web config login password
-      registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\WebConfigLoginPassword':
+      registry_value {"$::media_server_registry_path\\WebConfigLoginPassword":
         type    => string,
         data    => 'CA1E4FED70D14679362C37DF14F7C88A',
         require => Package['install-media-server'],
@@ -378,14 +378,14 @@ class cicserver::install (
 
 
       # Installing Media Server license
-      registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
-        type    => string,
-        data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
-        require => [
-          Package['install-media-server'],
-          File['c:/i3/ic/mediaserverlicense.i3lic'],
-        ],
-        before  => Exec['ININMediaServer-Start'],
+      registry_value {"$::media_server_registry_path\\LicenseFile":
+      type    => string,
+      data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
+      require => [
+        Package['install-media-server'],
+        File['c:/i3/ic/mediaserverlicense.i3lic'],
+      ],
+      before  => Exec['ININMediaServer-Start'],
       }
 
       # Creating powershell script to start Media Server service
