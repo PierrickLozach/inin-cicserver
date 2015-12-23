@@ -376,7 +376,6 @@ class cicserver::install (
         }
       }
 
-
       # Installing Media Server license
       registry_value {'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer\LicenseFile':
         type    => string,
@@ -386,6 +385,7 @@ class cicserver::install (
           File['c:/i3/ic/mediaserverlicense.i3lic'],
         ],
         before  => Exec['ININMediaServer-Start'],
+        require => Package['install-media-server'],
       }
 
       # Creating powershell script to start Media Server service
