@@ -42,3 +42,4 @@
 2015-11-04: Fixed media server license when using only 1 core
 2015-11-04: Fixed facts
 2015-11-18: Fixed issue when no patch is available
+2015-12-23: Fixed dependency
