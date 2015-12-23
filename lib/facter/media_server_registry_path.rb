@@ -25,6 +25,9 @@ Facter.add(:media_server_registry_path) do
       path = 'HKLM\Software\WOW6432Node\Interactive Intelligence\MediaServer'
     elsif key_exists?('SOFTWARE\Interactive Intelligence\MediaServer')
       path = 'HKLM\Software\Interactive Intelligence\MediaServer'
+    else
+      # Not sure which default value to use for now...
+      path = 'HKLM\Software\Interactive Intelligence\MediaServer'
     end
 
     media_server_registry_path = path
