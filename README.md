@@ -113,7 +113,7 @@ class {'cicserver::user':
   username         => 'testuser1', # The new CIC username
   password         => '1234',
   extension        => 8001,
-  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
+  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
   cicadminusername => 'vagrant',   # CIC user with administrative priviledges
   cicadminpassword => '1234',
   cicserver        => 'testregfr', # your CIC server name
@@ -126,7 +126,7 @@ class {'cicserver::workgroup':
   workgroupname    => 'testworkgroup1', # The name for the new CIC workgroup
   extension        => 8001,
   members          => ['testuser1', 'testuser2']
-  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
+  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
   cicadminusername => 'vagrant',   # CIC user with administrative priviledges
   cicadminpassword => '1234',
   cicserver        => 'testregfr', # your CIC server name
@@ -137,7 +137,7 @@ class {'cicserver::workgroup':
 class {'cicserver::users':
   ensure           => installed,
   cicuserdata      => '{"randomidentifier":{"username":"testuser1","password":"1234","extension":"8001"}, "anotherrandomidentifier":{"username":"testuser2","password":"5678","extension":"8003"}}', # JSON data
-  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
+  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
   cicadminusername => 'vagrant',   # CIC user with administrative priviledges
   cicadminpassword => '1234',
   cicserver        => 'testregfr', # your CIC server name
@@ -148,7 +148,7 @@ class {'cicserver::users':
 class {'cicserver::workgroups':
   ensure           => installed,
   cicworkgroupdata => '{"randomidentifier":{"workgroupname":"testworkgroup1","extension":"6001"}, "anotherrandomidentifier":{"workgroupname":"testworkgroup2","extension":"6002"}}', # JSON data
-  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
+  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic', # Path to the powershell scripts. You can download them here: https://github.com/PierrickI3/posh-ic
   cicadminusername => 'vagrant',   # CIC user with administrative priviledges
   cicadminpassword => '1234',
   cicserver        => 'testregfr', # your CIC server name

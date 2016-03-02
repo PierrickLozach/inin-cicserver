@@ -55,7 +55,7 @@ class cicserver::workgroup (
   $workgroupname,
   $extension,
   $members,
-  $pathtoscripts = 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib/',
+  $pathtoscripts = 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/',
   $cicadminusername,
   $cicadminpassword,
   $cicserver = 'localhost',

@@ -1,6 +1,6 @@
 {
   "name": "PierrickL-cicserver",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "author": "Pierrick Lozach",
   "summary": "Configures pre-installed CIC server & contains scripts to configure CIC",
   "license": "Apache-2.0",

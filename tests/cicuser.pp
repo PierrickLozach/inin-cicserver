@@ -3,7 +3,7 @@ class {'cicserver::user':
   username         => 'testuser1',
   password         => '1234',
   extension        => 8001,
-  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib',
+  pathtoscripts    => 'C:/Users/Vagrant/Desktop/Scripts/posh-ic',
   cicadminusername => 'vagrant',
   cicadminpassword => '1234',
   cicserver        => 'testregfr',

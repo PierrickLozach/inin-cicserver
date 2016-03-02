@@ -45,7 +45,7 @@
 class cicserver::users (
   $ensure = installed,
   $cicuserdata,
-  $pathtoscripts = 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/lib/',
+  $pathtoscripts = 'C:/Users/Vagrant/Desktop/Scripts/posh-ic/',
   $cicadminusername,
   $cicadminpassword,
   $cicserver = 'localhost',
