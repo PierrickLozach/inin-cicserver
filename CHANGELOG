@@ -44,3 +44,4 @@
 2015-11-18: Fixed issue when no patch is available
 2015-12-23: MediaServer registry path has changed
 2016-03-02: Fixed path to posh-ic scripts
+2016-03-08: Made cic license an optional parameter
