@@ -27,7 +27,7 @@ Facter.add(:media_server_registry_path) do
       path = 'HKLM\Software\Interactive Intelligence\MediaServer'
     else
       # Not sure which default value to use for now...
-      path = 'HKLM\Software\Interactive Intelligence\MediaServer'
+      path = 'HKLM\Software\Wow6432Node\Interactive Intelligence\MediaServer'
     end
 
     media_server_registry_path = path
