@@ -376,13 +376,13 @@ class cicserver::install (
 
       # Installing Media Server license
       registry_value {"$::media_server_registry_path\\LicenseFile":
-      type    => string,
-      data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
-      require => [
-        Package['install-media-server'],
-        File['c:/i3/ic/mediaserverlicense.i3lic'],
-      ],
-      before  => Exec['ININMediaServer-Start'],
+        type    => string,
+        data    => 'C:\\I3\\IC\\MediaServerLicense.i3lic',
+        require => [
+          Package['install-media-server'],
+          File['c:/i3/ic/mediaserverlicense.i3lic'],
+        ],
+        before  => Exec['ININMediaServer-Start'],
       }
 
       # Creating powershell script to start Media Server service
