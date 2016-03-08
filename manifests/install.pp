@@ -226,7 +226,7 @@ class cicserver::install (
       # Run Setup Assistant script
       exec {'setupassistant-run':
         command => "${cache_dir}\\RunSetupAssistant.ps1",
-        onlyif  => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}" # Don't run if it has been completed before
+        onlyif  => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
         provider => powershell,
         timeout  => 3600,
         require  => [
