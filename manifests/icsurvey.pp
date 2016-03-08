@@ -47,7 +47,7 @@
 #	Default IC user password. Defaults to 1234.
 #
 # [licensefile]
-#	Path to the .i3lic file
+#	Path to the .i3lic file (optional)
 #
 # [template]
 # Default path for the ICSurvey ERB template
@@ -67,18 +67,18 @@
 #
 #  class {'cicserver::icsurvey':
 #	  path 					        => 'c:/i3/ic/manifest/newsurvey.icsurvey',
-# 	installnodomain			  => true,			
+# 	installnodomain			  => true,
 # 	organizationname		  => 'organizationname',
 # 	locationname			    => 'locationname',
 # 	sitename				      => 'sitename',
-# 	dbreporttype			    => 'db', 			
+# 	dbreporttype			    => 'db',
 # 	dbtablename				    => 'I3_IC',
-# 	dialplanlocalareacode	=> '317',			
+# 	dialplanlocalareacode	=> '317',
 # 	emailfbmc				      => true,
 # 	recordingspath			  => 'C:/I3/IC/Recordings',
 # 	sipnic					      => 'Ethernet',
 # 	outboundaddress			  => '3178723000',
-# 	defaulticpassword		  => '1234',		
+# 	defaulticpassword		  => '1234',
 # 	licensefile				    => 'C:/I3/IC/license.i3lic',
 #   template              => 'cicserver/DefaultSurvey.ICSurvey.erb',
 #  }
@@ -106,7 +106,7 @@ class cicserver::icsurvey (
   $sipnic                 = 'Ethernet',
   $outboundaddress        = '3178723000',
   $defaulticpassword      = '1234',
-  $licensefile            = 'C:/I3/IC/iclicense.i3lic',
+  $licensefile            = '',
   $template               = 'cicserver/DefaultSurvey.ICSurvey.erb',
 ){
 

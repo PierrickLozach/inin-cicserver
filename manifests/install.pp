@@ -55,7 +55,7 @@
 #   Default IC user password. Defaults to 1234.
 #
 # [licensefile]
-#   Path to the CIC license file
+#   Path to the CIC license file (optional)
 #
 # [loggedonuserpassword]
 #   Password of the user that will be used to install CIC. Used to set credentials for the Interaction Center windows service.
@@ -226,10 +226,7 @@ class cicserver::install (
       # Run Setup Assistant script
       exec {'setupassistant-run':
         command => "${cache_dir}\\RunSetupAssistant.ps1",
-        onlyif  => [
-          "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}", # Don't run if it has been completed before
-          "if ((Get-ItemProperty (\"${licensefile}\") -name Length | Select -exp Length) -eq 0) {exit 1}", # Don't run if the license file size is 0
-          ],
+        onlyif  => "if ((Get-ItemProperty (\"hklm:\\software\\Wow6432Node\\Interactive Intelligence\\Setup Assistant\") -name Complete | Select -exp Complete) -eq 1) {exit 1}" # Don't run if it has been completed before
         provider => powershell,
         timeout  => 3600,
         require  => [
